@@ -1,55 +1,73 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>製品一覧</title>
-    
-    <style>
-        body { font-family: sans-serif; margin: 2em; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f4f4f4; }
-    </style>
-</head>
-<body>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('製品一覧') }}
+        </h2>
+    </x-slot>
 
-    <h1>製品一覧</h1>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 bg-white border-b border-gray-200">
 
-    <div style="margin-bottom: 1em;">
-        <a href="{{ route('products.create') }}">
-            <button type="button">新規登録</button>
-        </a>
+                    <div class="flex justify-end mb-4">
+                        <a href="{{ route('products.create') }}">
+                            <x-primary-button>
+                                {{ __('新規登録') }}
+                            </x-primary-button>
+                        </a>
+                    </div>
+
+                    @if (session('success'))
+                        <div class="mb-4 font-medium text-sm text-green-600">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    型番
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    製品名
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    メーカー
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    購入日
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse ($products as $product)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ $product->model_number }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $product->name }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $product->manufacturer }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $product->purchase_date }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                        製品が登録されていません。
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>型番</th>
-                <th>製品名</th>
-                <th>グループ名</th>
-                <th>購入日</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($products as $product)
-                <tr>
-                    <td>{{ $product->id }}</td>
-                    <td>{{ $product->model_number }}</td>
-                    <td>{{ $product->name }}</td>
-                    <td>
-                        {{ $product->group?->name ?? '未所属' }}
-                    </td>
-                    <td>{{ $product->purchase_date }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="5">製品が登録されていません。</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-</body>
-</html>
+</x-app-layout>

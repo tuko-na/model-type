@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ModelSuggestion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -12,7 +14,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with('group')->get();
+        $user = Auth::user();
+        $group = $user->groups()->first();
+        $products = $group ? $group->products()->get() : collect();
+
         return view('products.index', compact('products'));
     }
 
@@ -47,38 +52,55 @@ class ProductController extends Controller
         $product->group_id = $group->id;
         $product->save();
 
+        // PM-03: 内部辞書の更新
+        ModelSuggestion::updateOrCreate(
+            ['model_number' => $product->model_number],
+            [
+                'name' => $product->name,
+                'manufacturer' => $product->manufacturer,
+                'category' => $product->category,
+            ]
+        );
+
         return redirect()->route('products.index')->with('success', '製品を登録しました。');
     }
 
     /**
      * Display the specified resource.
      */
+    /*
     public function show(string $id)
     {
         //
     }
+    */
 
     /**
      * Show the form for editing the specified resource.
      */
+    /*
     public function edit(string $id)
     {
         //
     }
+    */
 
     /**
      * Update the specified resource in storage.
      */
+    /*
     public function update(Request $request, string $id)
     {
         //
     }
+    */
 
     /**
      * Remove the specified resource from storage.
      */
+    /*
     public function destroy(string $id)
     {
         //
     }
-}
+    */}
