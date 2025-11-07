@@ -21,7 +21,7 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        return view('products.create');
     }
 
     /**
@@ -29,7 +29,25 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'model_number' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'manufacturer' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'purchase_date' => 'required|date',
+        ]);
+
+        $group = $request->user()->groups()->first();
+
+        if (!$group) {
+            return back()->with('error', '所属するグループが見つかりません。');
+        }
+
+        $product = new Product($validatedData);
+        $product->group_id = $group->id;
+        $product->save();
+
+        return redirect()->route('products.index')->with('success', '製品を登録しました。');
     }
 
     /**

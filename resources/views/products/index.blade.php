@@ -16,6 +16,12 @@
 
     <h1>製品一覧</h1>
 
+    <div style="margin-bottom: 1em;">
+        <a href="{{ route('products.create') }}">
+            <button type="button">新規登録</button>
+        </a>
+    </div>
+
     <table>
         <thead>
             <tr>
