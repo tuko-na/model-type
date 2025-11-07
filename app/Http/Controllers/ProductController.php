@@ -48,9 +48,21 @@ class ProductController extends Controller
             return back()->with('error', '所属するグループが見つかりません。');
         }
 
-        $product = new Product($validatedData);
-        $product->group_id = $group->id;
-        $product->save();
+        try {
+            $product = new Product($validatedData);
+            $product->group_id = $group->id;
+            
+            if (!$product->save()) {
+                // save()がfalseを返した場合のログ
+                \Illuminate\Support\Facades\Log::error('Product save failed for an unknown reason.');
+                return back()->with('error', '製品の保存に失敗しました。管理者に連絡してください。')->withInput();
+            }
+
+        } catch (\Exception $e) {
+            // 例外が発生した場合のログ
+            \Illuminate\Support\Facades\Log::error('Exception caught while saving product: ' . $e->getMessage());
+            return back()->with('error', '製品の保存中にエラーが発生しました。管理者に連絡してください。')->withInput();
+        }
 
         // PM-03: 内部辞書の更新
         ModelSuggestion::updateOrCreate(

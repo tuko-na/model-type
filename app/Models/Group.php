@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
+    protected $fillable = [
+        'name',
+        'owner_id',
+    ];
+
     public function products()
     {
         return $this->hasMany(Product::class);

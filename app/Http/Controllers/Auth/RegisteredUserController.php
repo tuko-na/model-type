@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Group;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,6 +41,16 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // ユーザー登録と同時に、そのユーザー専用のグループを作成
+        $group = Group::create([
+            'name' => $user->name . 'のグループ', // (例：ユーザー名をグループ名にする)
+            'owner_id' => $user->id,
+        ]);
+
+        // 作成したグループに、今登録したユーザーを紐づける
+        // (group_user 中間テーブルに書き込まれます)
+        $user->groups()->attach($group->id);
 
         event(new Registered($user));
 
