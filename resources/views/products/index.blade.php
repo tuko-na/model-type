@@ -90,11 +90,10 @@
                                     <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
                                         <div class="flex flex-col items-end space-y-2">
                                             <a href="{{ route('products.edit', $product) }}" class="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700">編集</a>
-                                            <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('本当に削除しますか？');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700">削除</button>
-                                            </form>
+                                            <x-danger-button
+                                                x-data=""
+                                                x-on:click.prevent="$dispatch('open-modal', { name: 'confirm-product-deletion', action: '{{ route('products.destroy', $product) }}' })"
+                                            >{{ __('削除') }}</x-danger-button>
                                         </div>
                                     </td>
                                 </tr>
@@ -108,6 +107,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                    <x-confirm-delete-modal />
                 </div>
             </div>
         </div>

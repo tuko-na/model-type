@@ -92,16 +92,14 @@
                                 {{ __('編集') }}
                             </x-primary-button>
                         </a>
-                        <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('本当に削除しますか？');">
-                            @csrf
-                            @method('DELETE')
-                            <x-danger-button type="submit">
-                                {{ __('削除') }}
-                            </x-danger-button>
-                        </form>
+                        <x-danger-button
+                            x-data=""
+                            x-on:click.prevent="$dispatch('open-modal', { name: 'confirm-product-deletion', action: '{{ route('products.destroy', $product) }}' })"
+                        >{{ __('削除') }}</x-danger-button>
                     </div>
                 </div>
             </div>
         </div>
+        <x-confirm-delete-modal />
     </div>
 </x-app-layout>
