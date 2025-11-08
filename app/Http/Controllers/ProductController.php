@@ -92,22 +92,41 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    /*
-    public function edit(string $id)
+    public function edit(Product $product)
     {
-        //
+        return view('products.edit', compact('product'));
     }
-    */
 
     /**
      * Update the specified resource in storage.
      */
-    /*
-    public function update(Request $request, string $id)
+    public function update(Request $request, Product $product)
     {
-        //
+        $validatedData = $request->validate([
+            'model_number' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'manufacturer' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'purchase_date' => 'required|date',
+            'status' => 'required|string|in:active,in_storage,in_repair,disposed',
+            'purchase_condition' => 'required|string|in:新品,中古,再生品,不明',
+            'notes' => 'nullable|string',
+        ]);
+
+        $product->update($validatedData);
+
+        // PM-03: 内部辞書の更新
+        ModelSuggestion::updateOrCreate(
+            ['model_number' => $product->model_number],
+            [
+                'name' => $product->name,
+                'manufacturer' => $product->manufacturer,
+                'category' => $product->category,
+            ]
+        );
+
+        return redirect()->route('products.show', $product)->with('success', '製品情報を更新しました。');
     }
-    */
 
     /**
      * Remove the specified resource from storage.

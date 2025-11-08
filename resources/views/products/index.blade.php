@@ -88,8 +88,14 @@
                                         {{ $product->purchase_date }}
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                                        <a href="{{ route('products.show', $product) }}" class="text-indigo-600 hover:text-indigo-900">詳細</a>
-                                        {{-- <a href="#" class="ml-4 text-red-600 hover:text-red-900">削除</a> --}}
+                                        <div class="flex flex-col items-end space-y-2">
+                                            <a href="{{ route('products.edit', $product) }}" class="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700">編集</a>
+                                            <form action="{{ route('products.destroy', $product) }}" method="POST" onsubmit="return confirm('本当に削除しますか？');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700">削除</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
