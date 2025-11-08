@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\ModelSuggestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -34,12 +35,16 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        Log::debug($request->all());
         $validatedData = $request->validate([
             'model_number' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'manufacturer' => 'required|string|max:255',
             'category' => 'required|string|max:255',
             'purchase_date' => 'required|date',
+            'status' => 'required|string|in:active,in_storage,in_repair,disposed',
+            'purchase_condition' => 'required|string|in:新品,中古,再生品,不明',
+            'notes' => 'nullable|string',
         ]);
 
         $group = $request->user()->groups()->first();
@@ -59,7 +64,6 @@ class ProductController extends Controller
             }
 
         } catch (\Exception $e) {
-            // 例外が発生した場合のログ
             \Illuminate\Support\Facades\Log::error('Exception caught while saving product: ' . $e->getMessage());
             return back()->with('error', '製品の保存中にエラーが発生しました。管理者に連絡してください。')->withInput();
         }
@@ -80,12 +84,10 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    /*
-    public function show(string $id)
+    public function show(Product $product)
     {
-        //
+        return view('products.show', compact('product'));
     }
-    */
 
     /**
      * Show the form for editing the specified resource.
