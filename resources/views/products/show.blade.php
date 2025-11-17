@@ -99,6 +99,12 @@
                             </x-secondary-button>
                         </a>
 
+                        <a href="{{ route('products.incidents.create', $product) }}" class="mr-4">
+                            <x-primary-button>
+                                {{ __('インシデントを登録') }}
+                            </x-primary-button>
+                        </a>
+
                         <a href="{{ route('products.edit', $product) }}" class="mr-4">
                             <x-primary-button>
                                 {{ __('編集') }}
@@ -111,7 +117,53 @@
                     </div>
                 </div>
             </div>
+
+            <!-- インシデント一覧 -->
+            <div class="mt-8">
+                <h3 class="text-2xl font-semibold leading-tight text-gray-800">インシデント履歴</h3>
+                <div class="mt-4 overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                    <div class="p-6 bg-white border-b border-gray-200">
+                        @if($incidents->isEmpty())
+                            <p class="text-gray-500">この製品に関するインシデデントはまだ登録されていません。</p>
+                        @else
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">タイトル</th>
+                                        <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">発生日</th>
+                                        <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">種別</th>
+                                        <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">対応</th>
+                                        <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">費用</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach($incidents->sortByDesc('occurred_at') as $incident)
+                                        <tr>
+                                            <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                                <button
+                                                    type="button"
+                                                    x-data=""
+                                                    x-on:click.prevent='$dispatch("open-modal", { name: "incident-details", incident: @json($incident) })'
+                                                    class="text-indigo-600 hover:text-indigo-900"
+                                                >
+                                                    {{ $incident->title }}
+                                                </button>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ $incident->occurred_at }}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ $incident->incident_type_label }}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ $incident->resolution_type_label }}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ isset($incident->cost) ? number_format($incident->cost) . ' 円' : '---' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
         </div>
         <x-confirm-delete-modal />
+        <x-incident-details-modal />
     </div>
 </x-app-layout>

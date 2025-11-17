@@ -14,4 +14,9 @@ class Product extends Model
     {
         return $this->belongsTo(Group::class);
     }
+
+    public function incidents()
+    {
+        return $this->hasMany(Incident::class);
+    }
 }

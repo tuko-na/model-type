@@ -88,7 +88,15 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return view('products.show', compact('product'));
+        $product->load('incidents');
+
+        $incidents = $product->incidents->map(function ($incident) {
+            $incident->incident_type_label = \App\Models\Incident::INCIDENT_TYPES[$incident->incident_type] ?? $incident->incident_type;
+            $incident->resolution_type_label = \App\Models\Incident::RESOLUTION_TYPES[$incident->resolution_type] ?? $incident->resolution_type;
+            return $incident;
+        });
+
+        return view('products.show', compact('product', 'incidents'));
     }
 
     /**
