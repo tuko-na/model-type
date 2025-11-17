@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     protected $fillable = [
-        'group_id', 'model_number', 'name', 'manufacturer', 'category', 'purchase_date', 'purchase_condition', 'status', 'notes'
+        'group_id', 'model_number', 'name', 'manufacturer', 'category', 'purchase_date', 'purchase_condition', 'status', 'notes', 'warranty_expires_on', 'price'
     ];
 
     public function group()

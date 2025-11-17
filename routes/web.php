@@ -21,3 +21,7 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/check-locale', function () {
+    return 'Current locale: ' . app()->getLocale();
+});

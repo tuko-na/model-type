@@ -45,6 +45,18 @@
                             <p class="mt-1 text-sm text-gray-600">{{ $product->purchase_date }}</p>
                         </div>
 
+                        <!-- 保証終了日 -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">{{ __('保証終了日') }}</h3>
+                            <p class="mt-1 text-sm text-gray-600">{{ $product->warranty_expires_on ?? '---' }}</p>
+                        </div>
+
+                        <!-- 購入金額 -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">{{ __('購入金額') }}</h3>
+                            <p class="mt-1 text-sm text-gray-600">{{ isset($product->price) ? number_format($product->price) . ' 円' : '---' }}</p>
+                        </div>
+
                         <!-- 購入状態 -->
                         <div>
                             <h3 class="text-lg font-medium text-gray-900">{{ __('購入状態') }}</h3>

@@ -45,6 +45,8 @@ class ProductController extends Controller
             'status' => 'required|string|in:active,in_storage,in_repair,disposed',
             'purchase_condition' => 'required|string|in:新品,中古,再生品,不明',
             'notes' => 'nullable|string',
+            'warranty_expires_on' => 'nullable|date',
+            'price' => 'nullable|integer|min:0',
         ]);
 
         $group = $request->user()->groups()->first();
@@ -111,6 +113,8 @@ class ProductController extends Controller
             'status' => 'required|string|in:active,in_storage,in_repair,disposed',
             'purchase_condition' => 'required|string|in:新品,中古,再生品,不明',
             'notes' => 'nullable|string',
+            'warranty_expires_on' => 'nullable|date',
+            'price' => 'nullable|integer|min:0',
         ]);
 
         $product->update($validatedData);

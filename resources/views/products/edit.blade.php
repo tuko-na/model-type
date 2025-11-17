@@ -58,6 +58,20 @@
                             <x-input-error :messages="$errors->get('purchase_date')" class="mt-2" />
                         </div>
 
+                        <!-- 保証終了日 -->
+                        <div class="mt-4">
+                            <x-input-label for="warranty_expires_on" :value="__('保証終了日')" />
+                            <x-text-input id="warranty_expires_on" class="block w-full mt-1" type="date" name="warranty_expires_on" :value="old('warranty_expires_on', $product->warranty_expires_on)" />
+                            <x-input-error :messages="$errors->get('warranty_expires_on')" class="mt-2" />
+                        </div>
+
+                        <!-- 購入金額 -->
+                        <div class="mt-4">
+                            <x-input-label for="price" :value="__('購入金額')" />
+                            <x-text-input id="price" class="block w-full mt-1" type="number" name="price" :value="old('price', $product->price)" />
+                            <x-input-error :messages="$errors->get('price')" class="mt-2" />
+                        </div>
+
                         <!-- 購入状態 -->
                         <div class="mt-4">
                             <x-input-label for="purchase_condition" :value="__('購入状態')" />
