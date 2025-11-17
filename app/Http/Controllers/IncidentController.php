@@ -15,7 +15,19 @@ class IncidentController extends Controller
      */
     public function index()
     {
-        //
+        $user = Auth::user();
+        $group = $user->groups()->first();
+
+        if (!$group) {
+            $incidents = collect();
+        } else {
+            $incidents = Incident::where('group_id', $group->id)
+                ->with('product')
+                ->orderBy('occurred_at', 'desc')
+                ->get();
+        }
+
+        return view('incidents.index', compact('incidents'));
     }
 
     /**
