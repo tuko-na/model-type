@@ -83,24 +83,56 @@ class IncidentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Product $product, Incident $incident)
     {
-        //
+        return view('incidents.edit', [
+            'product' => $product,
+            'incident' => $incident,
+            'incident_types' => Incident::INCIDENT_TYPES,
+            'resolution_types' => Incident::RESOLUTION_TYPES,
+            'symptom_tags' => Incident::SYMPTOM_TAGS,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Product $product, Incident $incident)
     {
-        //
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'occurred_at' => 'required|date',
+            'incident_type' => ['required', 'string', Rule::in(array_keys(Incident::INCIDENT_TYPES))],
+            'resolution_type' => ['required', 'string', Rule::in(array_keys(Incident::RESOLUTION_TYPES))],
+            'symptom_tags' => 'nullable|array',
+            'symptom_tags.*' => ['string', Rule::in(array_keys(Incident::SYMPTOM_TAGS))],
+            'other_symptom' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'cost' => 'nullable|integer|min:0',
+        ]);
+
+        $tags = $validatedData['symptom_tags'] ?? [];
+        if (!empty($validatedData['other_symptom'])) {
+            $tags[] = $validatedData['other_symptom'];
+        }
+        $symptomTagsString = implode(',', $tags);
+
+        $updateData = $validatedData;
+        $updateData['symptom_tags'] = $symptomTagsString;
+        unset($updateData['other_symptom']);
+
+        $incident->update($updateData);
+
+        return redirect()->route('products.show', $product)->with('success', 'インシデント情報を更新しました。');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Product $product, Incident $incident)
     {
-        //
+        $incident->delete();
+
+        return redirect()->route('products.show', $product)->with('success', 'インシデントを削除しました。');
     }
 }

@@ -39,10 +39,22 @@
                     </div>
                 </div>
 
-                <div class="mt-6 flex justify-end">
-                    <x-secondary-button x-on:click="$dispatch('close')">
-                        {{ __('閉じる') }}
-                    </x-secondary-button>
+                <div class="mt-6 flex justify-between">
+                    <x-danger-button
+                        x-on:click.prevent="$dispatch('open-modal', { name: 'confirm-product-deletion', action: `/products/${incident.product_id}/incidents/${incident.id}` }); $dispatch('close')"
+                    >
+                        {{ __('削除') }}
+                    </x-danger-button>
+                    <div class="flex justify-end space-x-4">
+                        <x-secondary-button x-on:click="$dispatch('close')">
+                            {{ __('閉じる') }}
+                        </x-secondary-button>
+                        <a :href="`/products/${incident.product_id}/incidents/${incident.id}/edit`">
+                            <x-primary-button>
+                                {{ __('編集') }}
+                            </x-primary-button>
+                        </a>
+                    </div>
                 </div>
             </div>
         </template>

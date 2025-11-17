@@ -93,6 +93,13 @@ class ProductController extends Controller
         $incidents = $product->incidents->map(function ($incident) {
             $incident->incident_type_label = \App\Models\Incident::INCIDENT_TYPES[$incident->incident_type] ?? $incident->incident_type;
             $incident->resolution_type_label = \App\Models\Incident::RESOLUTION_TYPES[$incident->resolution_type] ?? $incident->resolution_type;
+            
+            $tagKeys = explode(',', $incident->symptom_tags);
+            $tagLabels = array_map(function ($key) {
+                return \App\Models\Incident::SYMPTOM_TAGS[$key] ?? $key;
+            }, $tagKeys);
+            $incident->symptom_tags = implode(', ', $tagLabels);
+
             return $incident;
         });
 
