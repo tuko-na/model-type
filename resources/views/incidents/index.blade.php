@@ -4,7 +4,7 @@
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
                 {{ __('インシデント一覧') }}
             </h2>
-            <a href="#">
+            <a href="{{ route('incidents.create') }}">
                 <x-primary-button>
                     {{ __('新規登録') }}
                 </x-primary-button>
