@@ -1,21 +1,22 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                {{ __('インシデント一覧') }}
-            </h2>
-            <a href="{{ route('incidents.create') }}">
-                <x-primary-button>
-                    {{ __('新規登録') }}
-                </x-primary-button>
-            </a>
-        </div>
+        <h2 class="text-xl font-semibold leading-tight text-gray-800">
+            {{ __('インシデント一覧') }}
+        </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
+                    <div class="flex justify-end mb-4">
+                        <a href="{{ route('incidents.create') }}">
+                            <x-primary-button>
+                                {{ __('新規登録') }}
+                            </x-primary-button>
+                        </a>
+                    </div>
+
                     @if (session('success'))
                         <div class="mb-4 text-sm font-medium text-green-600">
                             {{ session('success') }}
