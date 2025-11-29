@@ -13,11 +13,28 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $group = $user->groups()->first();
-        $products = $group ? $group->products()->get() : collect();
+
+        if (!$group) {
+            return view('products.index', ['products' => collect()]);
+        }
+
+        $query = $group->products();
+
+        if ($request->filled('search')) {
+            $searchTerm = '%' . $request->input('search') . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                    ->orWhere('model_number', 'like', $searchTerm)
+                    ->orWhere('category', 'like', $searchTerm)
+                    ->orWhere('manufacturer', 'like', $searchTerm);
+            });
+        }
+
+        $products = $query->get();
 
         return view('products.index', compact('products'));
     }
@@ -43,7 +60,7 @@ class ProductController extends Controller
             'category' => 'required|string|max:255',
             'purchase_date' => 'required|date',
             'status' => 'required|string|in:active,in_storage,in_repair,disposed',
-            'purchase_condition' => 'required|string|in:新品,中古,再生品,不明',
+            'purchase_condition' => 'required|string|in:新品,中古,再生品,不明',           
             'notes' => 'nullable|string',
             'warranty_expires_on' => 'nullable|date',
             'price' => 'nullable|integer|min:0',

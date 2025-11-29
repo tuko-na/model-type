@@ -13,19 +13,32 @@ class IncidentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $group = $user->groups()->first();
 
         if (!$group) {
-            $incidents = collect();
-        } else {
-            $incidents = Incident::where('group_id', $group->id)
-                ->with('product')
-                ->orderBy('occurred_at', 'desc')
-                ->get();
+            return view('incidents.index', ['incidents' => collect()]);
         }
+
+        $query = Incident::where('group_id', $group->id)
+            ->with('product')
+            ->orderBy('occurred_at', 'desc');
+
+        if ($request->filled('search')) {
+            $searchTerm = '%' . $request->input('search') . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('title', 'like', $searchTerm)
+                    ->orWhereHas('product', function ($productQuery) use ($searchTerm) {
+                        $productQuery->where('name', 'like', $searchTerm)
+                            ->orWhere('model_number', 'like', $searchTerm);
+                    });
+            });
+        }
+
+        $incidents = $query->get();
+
 
         return view('incidents.index', compact('incidents'));
     }
