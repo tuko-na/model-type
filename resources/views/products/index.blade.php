@@ -31,7 +31,7 @@
                                     </button>
                                 </x-slot>
                                 <x-slot name="content">
-                                    <div class="space-y-4">
+                                    <form action="{{ route('products.index') }}" method="GET" class="space-y-4">
                                         <h4 class="text-sm font-semibold">絞り込み</h4>
 
                                         <!-- 在庫ステータス -->
@@ -39,19 +39,19 @@
                                             <h5 class="mb-2 text-xs text-gray-500">在庫ステータス</h5>
                                             <div class="space-y-1">
                                                 <label class="flex items-center">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="status[]" value="active">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="status[]" value="active" @if(in_array('active', request('status', []))) checked @endif>
                                                     <span class="ml-2 text-sm">使用中</span>
                                                 </label>
                                                 <label class="flex items-center">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="status[]" value="in_storage">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="status[]" value="in_storage" @if(in_array('in_storage', request('status', []))) checked @endif>
                                                     <span class="ml-2 text-sm">保管中</span>
                                                 </label>
                                                 <label class="flex items-center">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="status[]" value="in_repair">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="status[]" value="in_repair" @if(in_array('in_repair', request('status', []))) checked @endif>
                                                     <span class="ml-2 text-sm">修理中</span>
                                                 </label>
                                                 <label class="flex items-center">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="status[]" value="disposed">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="status[]" value="disposed" @if(in_array('disposed', request('status', []))) checked @endif>
                                                     <span class="ml-2 text-sm">廃棄済み</span>
                                                 </label>
                                             </div>
@@ -62,19 +62,19 @@
                                             <h5 class="mb-2 text-xs text-gray-500">購入時の状態</h5>
                                             <div class="space-y-1">
                                                 <label class="flex items-center">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="condition[]" value="新品">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="condition[]" value="新品" @if(in_array('新品', request('condition', []))) checked @endif>
                                                     <span class="ml-2 text-sm">新品</span>
                                                 </label>
                                                 <label class="flex items-center">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="condition[]" value="中古">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="condition[]" value="中古" @if(in_array('中古', request('condition', []))) checked @endif>
                                                     <span class="ml-2 text-sm">中古</span>
                                                 </label>
                                                 <label class="flex items-center">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="condition[]" value="再生品">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="condition[]" value="再生品" @if(in_array('再生品', request('condition', []))) checked @endif>
                                                     <span class="ml-2 text-sm">再生品</span>
                                                 </label>
                                                 <label class="flex items-center">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="condition[]" value="不明">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="condition[]" value="不明" @if(in_array('不明', request('condition', []))) checked @endif>
                                                     <span class="ml-2 text-sm">不明</span>
                                                 </label>
                                             </div>
@@ -86,12 +86,12 @@
                                             <x-text-input type="text" x-model="searchTerm" placeholder="カテゴリ検索..." class="w-full mb-2" />
                                             <div class="space-y-1 overflow-y-auto max-h-40">
                                                 @php
-                                                    // 本来はControllerから渡すべきですが、UI実装のため一時的にここで定義
-                                                    $categories = $products->pluck('category')->unique()->sort();
+                                                    // This should be passed from the controller to avoid re-querying
+                                                    $all_categories = app(App\Models\Product::class)->pluck('category')->unique()->sort();
                                                 @endphp
-                                                @foreach($categories as $category)
+                                                @foreach($all_categories as $category)
                                                 <label class="flex items-center" x-show="!searchTerm || '{{ $category }}'.toLowerCase().includes(searchTerm.toLowerCase())">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="category[]" value="{{ $category }}">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="category[]" value="{{ $category }}" @if(in_array($category, request('category', []))) checked @endif>
                                                     <span class="ml-2 text-sm">{{ $category }}</span>
                                                 </label>
                                                 @endforeach
@@ -100,10 +100,10 @@
 
                                         <!-- 操作ボタン -->
                                         <div class="flex justify-end pt-4 space-x-2 border-t border-gray-200">
-                                            <button type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" x-on:click="open = false">リセット</button>
-                                            <x-primary-button>適用</x-primary-button>
+                                            <a href="{{ route('products.index') }}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">リセット</a>
+                                            <x-primary-button type="submit">適用</x-primary-button>
                                         </div>
-                                    </div>
+                                    </form>
                                 </x-slot>
                             </x-filter-popover>
                         </div>

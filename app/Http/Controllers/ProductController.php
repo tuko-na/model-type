@@ -24,6 +24,7 @@ class ProductController extends Controller
 
         $query = $group->products();
 
+        // キーワード検索
         if ($request->filled('search')) {
             $searchTerm = '%' . $request->input('search') . '%';
             $query->where(function ($q) use ($searchTerm) {
@@ -34,7 +35,22 @@ class ProductController extends Controller
             });
         }
 
-        $products = $query->get();
+        // 在庫ステータスによる絞り込み
+        if ($request->filled('status')) {
+            $query->whereIn('status', $request->input('status'));
+        }
+
+        // 購入時の状態による絞り込み
+        if ($request->filled('condition')) {
+            $query->whereIn('purchase_condition', $request->input('condition'));
+        }
+
+        // カテゴリによる絞り込み
+        if ($request->filled('category')) {
+            $query->whereIn('category', $request->input('category'));
+        }
+
+        $products = $query->latest('purchase_date')->get();
 
         return view('products.index', compact('products'));
     }

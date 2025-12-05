@@ -23,9 +23,9 @@ class IncidentController extends Controller
         }
 
         $query = Incident::where('group_id', $group->id)
-            ->with('product')
-            ->orderBy('occurred_at', 'desc');
+            ->with('product');
 
+        // キーワード検索
         if ($request->filled('search')) {
             $searchTerm = '%' . $request->input('search') . '%';
             $query->where(function ($q) use ($searchTerm) {
@@ -37,7 +37,58 @@ class IncidentController extends Controller
             });
         }
 
-        $incidents = $query->get();
+        // 発生日による絞り込み
+        if ($request->filled('start_date')) {
+            $query->where('occurred_at', '>=', $request->input('start_date'));
+        }
+        if ($request->filled('end_date')) {
+            $query->where('occurred_at', '<=', $request->input('end_date'));
+        }
+
+        // 費用による絞り込み
+        if ($request->filled('min_cost') || $request->filled('max_cost') || $request->filled('cost_is_null')) {
+            $query->where(function ($q) use ($request) {
+                // Cost Range sub-query
+                if ($request->filled('min_cost') || $request->filled('max_cost')) {
+                    $q->where(function ($rangeQuery) use ($request) {
+                        $minCost = (int) $request->input('min_cost', 0);
+                        $rangeQuery->where('cost', '>=', $minCost);
+
+                        if ($request->filled('max_cost') && $request->input('max_cost') > 0) {
+                            $maxCost = (int) $request->input('max_cost');
+                            $rangeQuery->where('cost', '<=', $maxCost);
+                        }
+                    });
+                }
+
+                // Cost is NULL sub-query
+                if ($request->filled('cost_is_null')) {
+                    $q->orWhereNull('cost');
+                }
+            });
+        }
+
+        // インシデント種別による絞り込み
+        if ($request->filled('incident_type')) {
+            $query->whereIn('incident_type', $request->input('incident_type'));
+        }
+
+        // 対応種別による絞り込み
+        if ($request->filled('resolution_type')) {
+            $query->whereIn('resolution_type', $request->input('resolution_type'));
+        }
+
+        // 症状タグによる絞り込み (AND検索)
+        if ($request->filled('symptom_tags')) {
+            $tags = $request->input('symptom_tags');
+            $query->where(function ($q) use ($tags) {
+                foreach ($tags as $tag) {
+                    $q->where('symptom_tags', 'like', '%' . $tag . '%');
+                }
+            });
+        }
+
+        $incidents = $query->orderBy('occurred_at', 'desc')->get();
 
 
         return view('incidents.index', compact('incidents'));

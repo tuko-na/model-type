@@ -44,23 +44,37 @@
                                         </div>
 
                                         <!-- 費用 -->
-                                        <div x-data="{
-                                                minCost: parseInt('{{ request('min_cost', 0) }}'),
-                                                maxCost: parseInt('{{ request('max_cost', 100000) }}'),
-                                                minRange: 0,
-                                                maxRange: 100000,
-                                                step: 1000,
-                                                updateMin() {
-                                                    if (this.minCost > this.maxCost) {
-                                                        this.maxCost = this.minCost;
-                                                    }
-                                                },
-                                                updateMax() {
-                                                    if (this.maxCost < this.minCost) {
-                                                        this.minCost = this.maxCost;
+                                        @php
+                                        $initialCostFilterData = [
+                                            'minCost' => (int) request('min_cost', 0),
+                                            'maxCost' => (int) request('max_cost', 100000),
+                                            'minRange' => 0,
+                                            'maxRange' => 100000,
+                                            'step' => 1000,
+                                        ];
+                                        @endphp
+                                        <script>
+                                            function incidentCostFilterData(initialData) {
+                                                return {
+                                                    minCost: initialData.minCost,
+                                                    maxCost: initialData.maxCost,
+                                                    minRange: initialData.minRange,
+                                                    maxRange: initialData.maxRange,
+                                                    step: initialData.step,
+                                                    updateMin() {
+                                                        if (this.minCost > this.maxCost) {
+                                                            this.maxCost = this.minCost;
+                                                        }
+                                                    },
+                                                    updateMax() {
+                                                        if (this.maxCost < this.minCost) {
+                                                            this.minCost = this.maxCost;
+                                                        }
                                                     }
                                                 }
-                                            }" class="space-y-3">
+                                            }
+                                        </script>
+                                        <div x-data='incidentCostFilterData(@json($initialCostFilterData))' class="space-y-3">
                                             <h5 class="text-xs text-gray-500">費用</h5>
                                             
                                             <div>
@@ -80,9 +94,15 @@
                                             </div>
 
                                             <div class="flex items-center space-x-2">
-                                                <x-text-input type="number" name="min_cost" x-model.number.debounce.500ms="minCost" @change="updateMin" class="w-full" />
+                                                <x-text-input type="number" name="min_cost" x-model.number="minCost" @change="updateMin" class="w-full" />
                                                 <span class="text-gray-500">-</span>
-                                                <x-text-input type="number" name="max_cost" x-model.number.debounce.500ms="maxCost" @change="updateMax" class="w-full" />
+                                                <x-text-input type="number" name="max_cost" x-model.number="maxCost" @change="updateMax" class="w-full" />
+                                            </div>
+                                            <div class="flex justify-end mt-2">
+                                                <label class="flex items-center">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="cost_is_null" value="1" {{ request('cost_is_null', true) ? 'checked' : '' }}>
+                                                    <span class="ml-2 text-sm">費用未定含む</span>
+                                                </label>
                                             </div>
                                         </div>
 
