@@ -124,24 +124,32 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    ステータス
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    製品名
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    型番
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    カテゴリ
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    メーカー
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    購入日
-                                </th>
+                                @php
+                                    $columns = [
+                                        'status' => 'ステータス',
+                                        'name' => '製品名',
+                                        'model_number' => '型番',
+                                        'category' => 'カテゴリ',
+                                        'manufacturer' => 'メーカー',
+                                        'purchase_date' => '購入日',
+                                    ];
+                                @endphp
+
+                                @foreach ($columns as $column => $label)
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        <a href="{{ route('products.index', array_merge(request()->query(), ['sort_by' => $column, 'sort_direction' => ($sortBy == $column && $sortDirection == 'asc') ? 'desc' : 'asc'])) }}" class="flex items-center">
+                                            {{ $label }}
+                                            @if ($sortBy == $column)
+                                                @if ($sortDirection == 'asc')
+                                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                                                @else
+                                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                @endif
+                                            @endif
+                                        </a>
+                                    </th>
+                                @endforeach
+
                                 <th scope="col" class="relative px-6 py-3">
                                     <span class="sr-only">編集</span>
                                 </th>

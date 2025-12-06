@@ -50,9 +50,18 @@ class ProductController extends Controller
             $query->whereIn('category', $request->input('category'));
         }
 
-        $products = $query->latest('purchase_date')->get();
+        // 並び替え
+        $sortableColumns = ['name', 'model_number', 'category', 'manufacturer', 'purchase_date', 'status'];
+        $sortBy = $request->input('sort_by', 'purchase_date');
+        $sortDirection = $request->input('sort_direction', 'desc');
 
-        return view('products.index', compact('products'));
+        if (in_array($sortBy, $sortableColumns) && in_array($sortDirection, ['asc', 'desc'])) {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+
+        $products = $query->get();
+
+        return view('products.index', compact('products', 'sortBy', 'sortDirection'));
     }
 
     /**
