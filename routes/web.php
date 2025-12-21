@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('/products/catalog', [ProductController::class, 'catalog'])->name('products.catalog');
     Route::resource('products', ProductController::class);
     Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index');
     Route::get('/incidents/create', CreateIncident::class)->name('incidents.create');

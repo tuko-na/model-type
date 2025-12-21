@@ -56,6 +56,33 @@ class ProductController extends Controller
     }
 
     /**
+     * Display the global catalog of products.
+     */
+    public function catalog(Request $request)
+    {
+        $query = ModelSuggestion::query();
+
+        if ($request->filled('search')) {
+            $searchTerm = '%' . $request->input('search') . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', $searchTerm)
+                    ->orWhere('model_number', 'like', $searchTerm)
+                    ->orWhere('category', 'like', $searchTerm)
+                    ->orWhere('manufacturer', 'like', $searchTerm);
+            });
+        }
+
+        // カテゴリによる絞り込み
+        if ($request->filled('category')) {
+            $query->whereIn('category', $request->input('category'));
+        }
+
+        $models = $query->orderBy('model_number')->paginate(20);
+
+        return view('products.catalog', compact('models'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

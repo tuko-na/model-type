@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800">
-            {{ __('製品一覧') }}
+            {{ __('保有製品一覧') }}
         </h2>
     </x-slot>
 
