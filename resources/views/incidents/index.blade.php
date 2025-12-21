@@ -5,11 +5,11 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="overflow-visible bg-white shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <div class="flex items-center justify-between mb-4">
+    <div class="py-12 h-full">
+        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 h-full">
+            <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg h-full flex flex-col">
+                <div class="p-6 bg-white border-b border-gray-200 h-full flex flex-col">
+                    <div class="flex items-center justify-between mb-4 flex-none">
                         <div class="flex items-center space-x-2">
                             <form action="{{ route('incidents.index') }}" method="GET">
                                 <div class="relative">
@@ -163,55 +163,57 @@
                     </div>
 
                     @if (session('success'))
-                        <div class="mb-4 text-sm font-medium text-green-600">
+                        <div class="mb-4 text-sm font-medium text-green-600 flex-none">
                             {{ session('success') }}
                         </div>
                     @endif
 
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">タイトル</th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">関連製品</th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">発生日</th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">種別</th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">対応</th>
-                                <th scope="col" class="relative px-6 py-3">
-                                    <span class="sr-only">詳細</span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($incidents as $incident)
+                    <div class="flex-1 overflow-y-auto border rounded-lg min-h-0">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0 z-10">
                                 <tr>
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ $incident->title }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                        @if ($incident->product)
-                                            <a href="{{ route('products.show', $incident->product) }}" class="text-indigo-600 hover:text-indigo-900">
-                                                {{ $incident->product->name }}
-                                            </a>
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ $incident->occurred_at }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ App\Models\Incident::INCIDENT_TYPES[$incident->incident_type] ?? $incident->incident_type }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ App\Models\Incident::RESOLUTION_TYPES[$incident->resolution_type] ?? $incident->resolution_type }}</td>
-                                    <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                                        @if ($incident->product)
-                                            <a href="{{ route('products.show', $incident->product) }}" class="text-indigo-600 hover:text-indigo-900">詳細を見る</a>
-                                        @endif
-                                    </td>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">タイトル</th>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">関連製品</th>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">発生日</th>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">種別</th>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">対応</th>
+                                    <th scope="col" class="relative px-6 py-3">
+                                        <span class="sr-only">詳細</span>
+                                    </th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="px-6 py-4 text-sm text-center text-gray-500 whitespace-nowrap">
-                                        インシデントはまだ登録されていません。
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse ($incidents as $incident)
+                                    <tr>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ $incident->title }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                            @if ($incident->product)
+                                                <a href="{{ route('products.show', $incident->product) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                    {{ $incident->product->name }}
+                                                </a>
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ $incident->occurred_at }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ App\Models\Incident::INCIDENT_TYPES[$incident->incident_type] ?? $incident->incident_type }}</td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ App\Models\Incident::RESOLUTION_TYPES[$incident->resolution_type] ?? $incident->resolution_type }}</td>
+                                        <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                                            @if ($incident->product)
+                                                <a href="{{ route('products.show', $incident->product) }}" class="text-indigo-600 hover:text-indigo-900">詳細を見る</a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-4 text-sm text-center text-gray-500 whitespace-nowrap">
+                                            インシデントはまだ登録されていません。
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
