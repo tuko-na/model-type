@@ -80,6 +80,7 @@ class ProductController extends Controller
             'notes' => 'nullable|string',
             'warranty_expires_on' => 'nullable|date',
             'price' => 'nullable|integer|min:0',
+            'useful_life' => 'nullable|integer|min:0',
         ]);
 
         $group = $request->user()->groups()->first();
@@ -163,6 +164,7 @@ class ProductController extends Controller
             'notes' => 'nullable|string',
             'warranty_expires_on' => 'nullable|date',
             'price' => 'nullable|integer|min:0',
+            'useful_life' => 'nullable|integer|min:0',
         ]);
 
         $product->update($validatedData);

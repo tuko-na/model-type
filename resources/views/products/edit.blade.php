@@ -84,6 +84,13 @@
                             <x-input-error :messages="$errors->get('purchase_condition')" class="mt-2" />
                         </div>
 
+                        <!-- 耐用年数 -->
+                        <div class="mt-4">
+                            <x-input-label for="useful_life" :value="__('耐用年数 (年)')" />
+                            <x-text-input id="useful_life" class="block w-full mt-1" type="number" name="useful_life" :value="old('useful_life', $product->useful_life)" placeholder="例: 5" min="0" step="1" />
+                            <x-input-error :messages="$errors->get('useful_life')" class="mt-2" />
+                        </div>
+
                         <!-- ステータス -->
                         <div class="mt-4">
                             <x-input-label for="status" :value="__('ステータス')" />

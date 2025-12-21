@@ -32,6 +32,26 @@
                             <canvas id="productsPerCategoryChart"></canvas>
                         </div>
                     </div>
+
+                    <!-- Depreciation Chart -->
+                    @if ($depreciationData)
+                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="p-6 text-gray-900">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-semibold text-lg">減価償却グラフ</h3>
+                                <select id="productSelector" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" onchange="location = '{{ route('dashboard') }}?product_id=' + this.value;">
+                                    @foreach ($depreciableProducts as $product)
+                                        <option value="{{ $product->id }}" {{ $product->id == $depreciationData['product_id'] ? 'selected' : '' }}>
+                                            {{ $product->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                             <p class="mb-2 text-sm">{{ $depreciationData['product_name'] }} の簿価の推移</p>
+                            <canvas id="depreciationChart"></canvas>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             @else
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -105,6 +125,52 @@
                                 'rgba(54, 162, 235, 0.5)',
                             ],
                         }]
+                    }
+                });
+            @endif
+
+            @if ($depreciationData)
+                const depreciationCtx = document.getElementById('depreciationChart').getContext('2d');
+                new Chart(depreciationCtx, {
+                    type: 'line',
+                    data: {
+                        labels: @json($depreciationData['labels']),
+                        datasets: [{
+                            label: '簿価',
+                            data: @json($depreciationData['data']),
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value, index, values) {
+                                        return '¥' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += '¥' + context.parsed.y.toLocaleString();
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
                     }
                 });
             @endif
