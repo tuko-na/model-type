@@ -1,8 +1,18 @@
-<x-app-layout>
+<x-app-layout :headerColor="$isPublic ? 'bg-emerald-50' : 'bg-white'">
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Dashboard') }}
+            </h2>
+            <div class="flex bg-gray-200 rounded-lg p-1 shadow-inner">
+                <a href="{{ route('mode.switch', 'private') }}" class="px-4 py-2 rounded-md text-sm font-medium transition-all {{ !$isPublic ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">
+                    プライベート
+                </a>
+                <a href="{{ route('mode.switch', 'public') }}" class="px-4 py-2 rounded-md text-sm font-medium transition-all {{ $isPublic ? 'bg-emerald-600 shadow text-white' : 'text-gray-500 hover:text-gray-700' }}">
+                    パブリック
+                </a>
+            </div>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -12,7 +22,11 @@
                     <!-- TCO by Category -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900">
-                            <h3 class="font-semibold text-lg mb-4">カテゴリ別総所有コスト (TCO)</h3>
+                            <div class="relative flex items-center mb-4">
+                                <div class="flex-grow border-t {{ $isPublic ? 'border-emerald-400' : 'border-gray-200' }}"></div>
+                                <h3 class="flex-shrink mx-4 font-semibold text-lg text-gray-600">カテゴリ別総所有コスト (TCO)</h3>
+                                <div class="flex-grow border-t {{ $isPublic ? 'border-emerald-400' : 'border-gray-200' }}"></div>
+                            </div>
                             <canvas id="tcoChart"></canvas>
                         </div>
                     </div>
@@ -20,7 +34,11 @@
                     <!-- Incidents by Type -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900">
-                            <h3 class="font-semibold text-lg mb-4">種類別インシデント数</h3>
+                            <div class="relative flex items-center mb-4">
+                                <div class="flex-grow border-t {{ $isPublic ? 'border-emerald-400' : 'border-gray-200' }}"></div>
+                                <h3 class="flex-shrink mx-4 font-semibold text-lg text-gray-600">種類別インシデント数</h3>
+                                <div class="flex-grow border-t {{ $isPublic ? 'border-emerald-400' : 'border-gray-200' }}"></div>
+                            </div>
                             <canvas id="incidentsChart"></canvas>
                         </div>
                     </div>
@@ -28,7 +46,11 @@
                     <!-- Products per Category -->
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900">
-                            <h3 class="font-semibold text-lg mb-4">カテゴリ別製品数</h3>
+                            <div class="relative flex items-center mb-4">
+                                <div class="flex-grow border-t {{ $isPublic ? 'border-emerald-400' : 'border-gray-200' }}"></div>
+                                <h3 class="flex-shrink mx-4 font-semibold text-lg text-gray-600">カテゴリ別製品数</h3>
+                                <div class="flex-grow border-t {{ $isPublic ? 'border-emerald-400' : 'border-gray-200' }}"></div>
+                            </div>
                             <canvas id="productsPerCategoryChart"></canvas>
                         </div>
                     </div>
@@ -37,9 +59,14 @@
                     @if ($depreciationData)
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900">
+                            <div class="relative flex items-center mb-4">
+                                <div class="flex-grow border-t {{ $isPublic ? 'border-emerald-400' : 'border-gray-200' }}"></div>
+                                <h3 class="flex-shrink mx-4 font-semibold text-lg text-gray-600">減価償却グラフ</h3>
+                                <div class="flex-grow border-t {{ $isPublic ? 'border-emerald-400' : 'border-gray-200' }}"></div>
+                            </div>
                             <div class="flex justify-between items-center mb-4">
-                                <h3 class="font-semibold text-lg">減価償却グラフ</h3>
-                                <select id="productSelector" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" onchange="location = '{{ route('dashboard') }}?product_id=' + this.value;">
+                                <p class="text-sm text-gray-500">{{ $depreciationData['product_name'] }} の簿価の推移</p>
+                                <select id="productSelector" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm" onchange="location = '{{ route('dashboard') }}?product_id=' + this.value;">
                                     @foreach ($depreciableProducts as $product)
                                         <option value="{{ $product->id }}" {{ $product->id == $depreciationData['product_id'] ? 'selected' : '' }}>
                                             {{ $product->name }}
@@ -47,7 +74,6 @@
                                     @endforeach
                                 </select>
                             </div>
-                             <p class="mb-2 text-sm">{{ $depreciationData['product_name'] }} の簿価の推移</p>
                             <canvas id="depreciationChart"></canvas>
                         </div>
                     </div>

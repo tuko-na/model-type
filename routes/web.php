@@ -25,6 +25,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index');
     Route::get('/incidents/create', CreateIncident::class)->name('incidents.create');
     Route::resource('products.incidents', IncidentController::class)->scoped();
+
+    Route::get('/mode/switch/{mode}', function ($mode) {
+        if (in_array($mode, ['private', 'public'])) {
+            session(['view_mode' => $mode]);
+        }
+        return back();
+    })->name('mode.switch');
 });
 
 require __DIR__.'/auth.php';

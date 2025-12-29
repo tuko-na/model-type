@@ -21,21 +21,40 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $group = $user->groups()->first();
+        $isPublic = session('view_mode') === 'public';
 
-        if (!$group) {
-            return view('dashboard', ['stats' => [], 'depreciationData' => null, 'depreciableProducts' => []]);
+        if (!$group && !$isPublic) {
+            return view('dashboard', ['stats' => [], 'depreciationData' => null, 'depreciableProducts' => [], 'isPublic' => $isPublic]);
         }
 
+        // Helper function to apply scope
+        $applyScope = function ($query) use ($group, $isPublic) {
+            if (!$isPublic) {
+                $query->where('group_id', $group->id);
+            }
+            // In public mode, we query all data (no group filter)
+        };
+        
+        // Helper for incidents scope (via products)
+        $applyIncidentScope = function ($query) use ($group, $isPublic) {
+             if (!$isPublic) {
+                $query->whereIn('product_id', function ($q) use ($group) {
+                    $q->select('id')->from('products')->where('group_id', $group->id);
+                });
+            }
+        };
+
+
         // 1. TCO by Category
-        $tcoByCategory = Product::where('group_id', $group->id)
-            ->select('category', DB::raw('SUM(price) as total_price'))
+        $tcoQuery = Product::query();
+        $applyScope($tcoQuery);
+        $tcoByCategory = $tcoQuery->select('category', DB::raw('SUM(price) as total_price'))
             ->groupBy('category')
             ->pluck('total_price', 'category')->all();
 
-        $incidentCosts = Incident::whereIn('product_id', function ($query) use ($group) {
-            $query->select('id')->from('products')->where('group_id', $group->id);
-        })
-        ->join('products', 'incidents.product_id', '=', 'products.id')
+        $incidentCostsQuery = Incident::query();
+        $applyIncidentScope($incidentCostsQuery);
+        $incidentCosts = $incidentCostsQuery->join('products', 'incidents.product_id', '=', 'products.id')
         ->select('products.category', DB::raw('SUM(incidents.cost) as total_incident_cost'))
         ->groupBy('products.category')
         ->pluck('total_incident_cost', 'products.category')->all();
@@ -45,10 +64,9 @@ class DashboardController extends Controller
         }
 
         // 2. Incidents by Type
-        $incidentsByTypeRaw = Incident::whereIn('product_id', function ($query) use ($group) {
-            $query->select('id')->from('products')->where('group_id', $group->id);
-        })
-        ->select('incident_type', DB::raw('count(*) as count'))
+        $incidentsByTypeQuery = Incident::query();
+        $applyIncidentScope($incidentsByTypeQuery);
+        $incidentsByTypeRaw = $incidentsByTypeQuery->select('incident_type', DB::raw('count(*) as count'))
         ->groupBy('incident_type')
         ->pluck('count', 'incident_type')->all();
 
@@ -63,17 +81,20 @@ class DashboardController extends Controller
 
 
         // 3. Number of products per category
-        $productsPerCategory = Product::where('group_id', $group->id)
-            ->select('category', DB::raw('count(*) as count'))
+        $productsPerCategoryQuery = Product::query();
+        $applyScope($productsPerCategoryQuery);
+        $productsPerCategory = $productsPerCategoryQuery->select('category', DB::raw('count(*) as count'))
             ->groupBy('category')
             ->pluck('count', 'category')->all();
 
-        // 4. Depreciation Data
-        $depreciableProducts = Product::where('group_id', $group->id)
-            ->whereNotNull('price')
+        // 4. Depreciation Data (Only for private mode or if we want to show a demo product)
+        // For public mode, let's just pick one sample product or disable it if confusing.
+        // Let's keep it but scope it.
+        $depreciationQuery = Product::whereNotNull('price')
             ->whereNotNull('useful_life')
-            ->where('useful_life', '>', 0)
-            ->get();
+            ->where('useful_life', '>', 0);
+        $applyScope($depreciationQuery);
+        $depreciableProducts = $depreciationQuery->limit(50)->get(); // Limit for public performance
 
         $depreciationData = null;
         if ($depreciableProducts->isNotEmpty()) {
@@ -103,7 +124,7 @@ class DashboardController extends Controller
             ],
         ];
 
-        return view('dashboard', compact('stats', 'depreciationData', 'depreciableProducts'));
+        return view('dashboard', compact('stats', 'depreciationData', 'depreciableProducts', 'isPublic'));
     }
 
     /**
