@@ -1,0 +1,208 @@
+<?php
+
+namespace App\Livewire;
+
+use App\Models\Product;
+use App\Models\Incident;
+use Livewire\Component;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
+
+class PortalDashboard extends Component
+{
+    public $selectedProductId = null;
+    public $search = '';
+
+    // Category Average Lifespan (in years) - Hardcoded for prototype
+    protected $categoryLifespans = [
+        'Smartphone' => 3,
+        'Laptop' => 4,
+        'Tablet' => 3,
+        'TV' => 7,
+        'Appliance' => 10,
+        'Other' => 5,
+    ];
+
+    public function mount()
+    {
+        $firstProduct = Product::where('group_id', $this->getGroupId())->first();
+        $this->selectedProductId = $firstProduct?->id;
+    }
+    
+    public function getGroupId()
+    {
+        return Auth::user()->groups->first()?->id; 
+    }
+
+    public function selectProduct($id)
+    {
+        $this->selectedProductId = $id;
+        $this->dispatch('update-charts');
+    }
+    
+    #[Computed]
+    public function selectedProduct()
+    {
+        if (!$this->selectedProductId) return null;
+        return Product::with('incidents')->find($this->selectedProductId);
+    }
+    
+    #[Computed]
+    public function allProducts()
+    {
+        $query = Product::where('group_id', $this->getGroupId());
+        
+        if ($this->search) {
+            $query->where(function($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('model_number', 'like', '%' . $this->search . '%');
+            });
+        }
+        
+        return $query->take(50)->get(); // Limit for dropdown
+    }
+
+    #[Computed]
+    public function globalKpis()
+    {
+        $groupId = $this->getGroupId();
+        if (!$groupId) return ['avg_lifespan' => 0, 'annual_maintenance_cost' => 0, 'incident_rate' => 0];
+
+        $products = Product::where('group_id', $groupId)->get();
+        
+        // Avg Lifespan
+        $totalLifespanDays = 0;
+        $count = 0;
+        foreach ($products as $p) {
+            if ($p->purchase_date) {
+                $start = Carbon::parse($p->purchase_date);
+                $end = ($p->status === 'disposed') ? $p->updated_at : now();
+                $totalLifespanDays += $start->diffInDays($end);
+                $count++;
+            }
+        }
+        $avgLifespan = $count > 0 ? round(($totalLifespanDays / $count) / 365, 1) : 0;
+
+        // Annual Maintenance Cost
+        $annualCost = Incident::whereHas('product', fn($q) => $q->where('group_id', $groupId))
+            ->where('occurred_at', '>=', now()->subYear())
+            ->sum('cost');
+
+        // Incident Rate
+        $productsWithIncidents = Product::where('group_id', $groupId)->has('incidents')->count();
+        $totalProducts = $products->count();
+        $incidentRate = $totalProducts > 0 ? round(($productsWithIncidents / $totalProducts) * 100, 1) : 0;
+
+        return [
+            'avg_lifespan' => $avgLifespan,
+            'annual_maintenance_cost' => $annualCost,
+            'incident_rate' => $incidentRate,
+        ];
+    }
+
+    #[Computed]
+    public function focusMonitorData()
+    {
+        $product = $this->selectedProduct;
+        if (!$product) return null;
+
+        // CPD Calculation
+        $daysOwned = 1;
+        if ($product->purchase_date) {
+            $start = Carbon::parse($product->purchase_date);
+            $end = ($product->status === 'disposed') ? $product->updated_at : now();
+            $daysOwned = max(1, $start->diffInDays($end));
+        }
+        
+        $totalCost = ($product->price ?? 0) + $product->incidents->sum('cost');
+        $cpd = round($totalCost / $daysOwned, 1);
+
+        // Category Avg CPD
+        $catAvgLife = $this->categoryLifespans[$product->category] ?? 5;
+        $catAvgDays = $catAvgLife * 365;
+        
+        $catProducts = Product::where('category', $product->category)
+            ->where('group_id', $this->getGroupId()) // Restrict to own group or global? User said "Average CPD". Maybe global stats if available, but let's stick to group for isolation unless "Anonymous Global Stats" is enabled.
+            // Requirement IS-02 says statistical dashboard should be group isolated unless opted in.
+            // I will restrict to group for now.
+            ->where('id', '!=', $product->id)
+            ->get();
+            
+        // If no other products in group, use own price or 0? 
+        // If empty, use own price.
+        $avgPrice = $catProducts->count() > 0 ? $catProducts->avg('price') : ($product->price ?? 0);
+        
+        $avgCpd = round($avgPrice / $catAvgDays, 1);
+
+        // Lifespan Forecast
+        $lifespanPercentage = 0;
+        if ($product->purchase_date) {
+             $start = Carbon::parse($product->purchase_date);
+             $elapsedYears = $start->diffInYears(now());
+             $lifespanPercentage = ($catAvgLife > 0) ? min(100, round(($elapsedYears / $catAvgLife) * 100)) : 0;
+        }
+
+        return [
+            'cpd' => $cpd,
+            'avg_cpd' => $avgCpd,
+            'lifespan_percentage' => $lifespanPercentage,
+            'category_life_years' => $catAvgLife,
+            'days_owned' => $daysOwned,
+        ];
+    }
+
+    #[Computed]
+    public function discovery()
+    {
+        $groupId = $this->getGroupId();
+        if (!$groupId) return [];
+
+        $products = Product::where('group_id', $groupId)->with('incidents')->get();
+
+        // Worst CPD Ranking
+        $cpdList = $products->map(function ($p) {
+            $days = 1;
+            if ($p->purchase_date) {
+                $start = Carbon::parse($p->purchase_date);
+                $end = ($p->status === 'disposed') ? $p->updated_at : now();
+                $days = max(1, $start->diffInDays($end));
+            }
+            $cost = ($p->price ?? 0) + $p->incidents->sum('cost');
+            return [
+                'product' => $p,
+                'cpd' => $days > 0 ? $cost / $days : 0,
+            ];
+        })->sortByDesc('cpd')->take(5);
+
+        // Hall of Fame (Longest active)
+        $hallOfFame = Product::where('group_id', $groupId)
+            ->where(function($q) {
+                $q->where('status', '!=', 'disposed')
+                  ->orWhereNull('status');
+            })
+            ->whereNotNull('purchase_date')
+            ->orderBy('purchase_date', 'asc')
+            ->take(5)
+            ->get();
+
+        // Alerts
+        $alerts = Product::where('group_id', $groupId)
+            ->where(function($q) {
+                $q->where('status', 'repairing')
+                  ->orWhereBetween('warranty_expires_on', [now(), now()->addDays(30)]);
+            })->get();
+
+        return [
+            'worst_cpd' => $cpdList,
+            'hall_of_fame' => $hallOfFame,
+            'alerts' => $alerts,
+        ];
+    }
+    
+    public function render()
+    {
+        return view('livewire.portal-dashboard')->layout('layouts.app');
+    }
+}

@@ -5,13 +5,14 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\DashboardController;
 use App\Livewire\CreateIncident;
+use App\Livewire\PortalDashboard;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
+Route::get('/dashboard', PortalDashboard::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
