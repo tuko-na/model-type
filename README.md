@@ -24,6 +24,11 @@ composer setup
 php artisan serve
 ```
 
+## テストデータ
+推奨ユーザー
+メールアドレス：　test_user10@example.com
+パスワード：　　　password
+
 ## Features
 
 - **型番管理**: 製品を型番で一意に管理し、故障予測などの統計データとしての価値を高めます。
