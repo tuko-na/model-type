@@ -39,7 +39,7 @@ class PortalDashboard extends Component
     public function selectProduct($id)
     {
         $this->selectedProductId = $id;
-        $this->dispatch('update-charts');
+        $this->dispatch('product-selected', data: $this->focusMonitorData);
     }
     
     #[Computed]

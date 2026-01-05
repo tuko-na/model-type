@@ -52,31 +52,36 @@
 
         @if($this->selectedProduct)
             {{-- 
-                MOVED x-data HERE. 
-                Using wire:key ensures this entire block is replaced when product changes.
-                This forces Alpine to re-initialize 'focusMonitor' with the NEW data.
+                Improved x-data structure:
+                - Listens for 'product-selected' event from Livewire to update data.
+                - Uses wire:ignore on chart containers to prevent Livewire from DOM-diffing the canvas elements.
             --}}
-            <div wire:key="focus-monitor-{{ $selectedProductId }}" x-data="focusMonitor(@json($this->focusMonitorData))">
+            <div 
+                x-data='focusMonitor(@json($this->focusMonitorData))' 
+                @product-selected.window="updateCharts($event.detail.data)"
+            >
                 <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
                     {{-- Left: Lifespan Forecast --}}
                     <div class="p-4 rounded-lg bg-gray-50">
                         <h3 class="mb-4 text-sm font-medium text-gray-500">Lifespan Forecast</h3>
-                        <div class="relative w-full h-48">
+                        {{-- wire:ignore prevents Livewire from re-rendering this div --}}
+                        <div class="relative w-full h-48" wire:ignore>
                             <canvas x-ref="lifespanCanvas"></canvas>
                         </div>
                         <p class="mt-2 text-sm text-center text-gray-600">
-                            Category Avg: <span class="font-bold">{{ $this->focusMonitorData['category_life_years'] }} years</span>
+                            Category Avg: <span class="font-bold" x-text="data.category_life_years + ' years'"></span>
                         </p>
                     </div>
 
                     {{-- Right: CPD Comparison --}}
                     <div class="p-4 rounded-lg bg-gray-50">
                         <h3 class="mb-4 text-sm font-medium text-gray-500">Cost Per Day (CPD) Efficiency</h3>
-                        <div class="relative w-full h-48">
+                        {{-- wire:ignore prevents Livewire from re-rendering this div --}}
+                        <div class="relative w-full h-48" wire:ignore>
                              <canvas x-ref="cpdCanvas"></canvas>
                         </div>
                          <p class="mt-2 text-sm text-center text-gray-600">
-                            My CPD: <span class="font-bold">¥{{ number_format($this->focusMonitorData['cpd']) }}</span> vs Avg: ¥{{ number_format($this->focusMonitorData['avg_cpd']) }}
+                            My CPD: <span class="font-bold" x-text="'¥' + new Intl.NumberFormat().format(data.cpd)"></span> vs Avg: ¥<span x-text="new Intl.NumberFormat().format(data.avg_cpd)"></span>
                         </p>
                     </div>
                 </div>
@@ -149,42 +154,39 @@
 <script>
     (function() {
         const registerFocusMonitor = () => {
-            // Check if already registered to avoid error
-            // Alpine doesn't expose a list of registered data, but re-registering throws warning/error.
-            // Best effort: just run it. If it fails due to duplicate, catch it? 
-            // Actually, Alpine.data() overwrites or we can check via try-catch if strict.
-            // But simple check:
-            
             Alpine.data('focusMonitor', (initialData) => ({
                 data: initialData,
                 lifespanChartInstance: null,
                 cpdChartInstance: null,
 
                 init() {
+                    // console.log('Alpine Init with data:', this.data);
                     if (this.data) {
-                        // Wait for DOM to be updated
-                        this.$nextTick(() => {
-                            this.initCharts();
-                        });
+                        this.initCharts();
                     }
                 },
 
+                updateCharts(newData) {
+                    // console.log('Data received:', newData);
+                    this.data = newData;
+                    // Instead of partial updates, we destroy and re-create.
+                    // This ensures the chart is not lost and triggers the entrance animation every time.
+                    this.initCharts();
+                },
+
                 initCharts() {
-                    // Check for Chart.js availability with retry
                     if (!window.Chart) {
                         console.warn('Chart.js not ready, retrying in 100ms...');
                         setTimeout(() => this.initCharts(), 100);
                         return;
                     }
 
-                    // Destroy old instances if they exist (though x-init usually means fresh component)
+                    // Destroy old instances just in case
                     if (this.lifespanChartInstance) {
                         this.lifespanChartInstance.destroy();
-                        this.lifespanChartInstance = null;
                     }
                     if (this.cpdChartInstance) {
                         this.cpdChartInstance.destroy();
-                        this.cpdChartInstance = null;
                     }
 
                     // Lifespan Chart
