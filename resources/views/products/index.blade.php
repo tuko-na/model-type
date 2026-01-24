@@ -1,16 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight text-gray-800">
-            {{ __('製品一覧') }}
+            {{ __('保有製品一覧') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-            <div class="overflow-visible bg-white shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
+    <div class="py-12 h-full">
+        <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 h-full">
+            <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg h-full flex flex-col">
+                <div class="p-6 bg-white border-b border-gray-200 h-full flex flex-col">
 
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center justify-between mb-4 flex-none">
                         <div class="flex items-center space-x-2">
                             <form action="{{ route('products.index') }}" method="GET">
                                 <div class="relative">
@@ -116,94 +116,96 @@
                     </div>
 
                     @if (session('success'))
-                        <div class="mb-4 text-sm font-medium text-green-600">
+                        <div class="mb-4 text-sm font-medium text-green-600 flex-none">
                             {{ session('success') }}
                         </div>
                     @endif
 
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    ステータス
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    製品名
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    型番
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    カテゴリ
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    メーカー
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                    購入日
-                                </th>
-                                <th scope="col" class="relative px-6 py-3">
-                                    <span class="sr-only">編集</span>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($products as $product)
+                    <div class="flex-1 overflow-y-auto border rounded-lg min-h-0">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0 z-10">
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span @class([
-                                            'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                                            'bg-green-100 text-green-800' => $product->status === 'active',
-                                            'bg-gray-100 text-gray-800' => $product->status === 'in_storage',
-                                            'bg-yellow-100 text-yellow-800' => $product->status === 'in_repair',
-                                            'bg-red-100 text-red-800' => $product->status === 'disposed',
-                                        ])>
-                                            {{ match ($product->status) {
-                                                'active' => '使用中',
-                                                'in_storage' => '保管中',
-                                                'in_repair' => '修理中',
-                                                'disposed' => '廃棄済み',
-                                                default => '不明',
-                                            } }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
-                                        <a href="{{ route('products.show', $product) }}" class="text-indigo-600 hover:text-indigo-900">
-                                            {{ $product->name }}
-                                        </a>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                        {{ $product->model_number }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                        {{ $product->category }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                        {{ $product->manufacturer }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                        {{ $product->purchase_date }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
-                                        <div class="flex flex-col items-end space-y-2">
-                                            <a href="{{ route('products.edit', $product) }}" class="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700">編集</a>
-                                            <x-danger-button
-                                                x-data=""
-                                                x-on:click.prevent="$dispatch('open-modal', { name: 'confirm-product-deletion', action: '{{ route('products.destroy', $product) }}' })"
-                                            >{{ __('削除') }}</x-danger-button>
-                                        </div>
-                                    </td>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        ステータス
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        製品名
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        型番
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        カテゴリ
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        メーカー
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                                        購入日
+                                    </th>
+                                    <th scope="col" class="relative px-6 py-3">
+                                        <span class="sr-only">編集</span>
+                                    </th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="px-6 py-4 text-sm text-center text-gray-500 whitespace-nowrap">
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse ($products as $product)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span @class([
+                                                'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                                                'bg-green-100 text-green-800' => $product->status === 'active',
+                                                'bg-gray-100 text-gray-800' => $product->status === 'in_storage',
+                                                'bg-yellow-100 text-yellow-800' => $product->status === 'in_repair',
+                                                'bg-red-100 text-red-800' => $product->status === 'disposed',
+                                            ])>
+                                                {{ match ($product->status) {
+                                                    'active' => '使用中',
+                                                    'in_storage' => '保管中',
+                                                    'in_repair' => '修理中',
+                                                    'disposed' => '廃棄済み',
+                                                    default => '不明',
+                                                } }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
+                                            <a href="{{ route('products.show', $product) }}" class="text-indigo-600 hover:text-indigo-900">
+                                                {{ $product->name }}
+                                            </a>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                            {{ $product->model_number }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                            {{ $product->category }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                            {{ $product->manufacturer }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                            {{ $product->purchase_date }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                                            <div class="flex flex-col items-end space-y-2">
+                                                <a href="{{ route('products.edit', $product) }}" class="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700">編集</a>
+                                                <x-danger-button
+                                                    x-data=""
+                                                    x-on:click.prevent="$dispatch('open-modal', { name: 'confirm-product-deletion', action: '{{ route('products.destroy', $product) }}' })"
+                                                >{{ __('削除') }}</x-danger-button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-4 text-sm text-center text-gray-500 whitespace-nowrap">
 
-                                    製品が登録されていません。
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                        製品が登録されていません。
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                     <x-confirm-delete-modal />
                 </div>
             </div>
