@@ -99,7 +99,7 @@
                             </x-secondary-button>
                         </a>
 
-                        <a href="{{ route('products.incidents.create', $product) }}" class="mr-4">
+                        <a href="{{ route('incidents.create', ['product_id' => $product->id]) }}" class="mr-4">
                             <x-primary-button>
                                 {{ __('インシデントを登録') }}
                             </x-primary-button>

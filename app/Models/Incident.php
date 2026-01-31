@@ -28,6 +28,13 @@ class Incident extends Model
         'software_glitch' => 'ソフトウェアの不具合',
     ];
 
+    public const SEVERITY_LEVELS = [
+        'low' => ['label' => '軽微', 'color' => 'green', 'icon' => 'info'],
+        'medium' => ['label' => '中程度', 'color' => 'yellow', 'icon' => 'alert-triangle'],
+        'high' => ['label' => '重大', 'color' => 'orange', 'icon' => 'alert-circle'],
+        'critical' => ['label' => '致命的', 'color' => 'red', 'icon' => 'x-octagon'],
+    ];
+
     protected $fillable = [
         'product_id',
         'group_id',
@@ -39,6 +46,14 @@ class Incident extends Model
         'incident_type',
         'resolution_type',
         'symptom_tags',
+        'details',
+        'severity',
+    ];
+
+    protected $casts = [
+        'details' => 'array',
+        'occurred_at' => 'date',
+        'cost' => 'integer',
     ];
 
     public function product()
