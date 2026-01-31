@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\DashboardController;
 use App\Livewire\CreateIncident;
+use App\Livewire\EditIncident;
 use App\Livewire\PortalDashboard;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class);
     Route::get('/incidents', [IncidentController::class, 'index'])->name('incidents.index');
     Route::get('/incidents/create', CreateIncident::class)->name('incidents.create');
+    Route::get('/incidents/{incident}/edit', EditIncident::class)->name('incidents.edit');
     Route::resource('products.incidents', IncidentController::class)->scoped();
 
     Route::get('/mode/switch/{mode}', function ($mode) {

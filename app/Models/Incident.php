@@ -56,6 +56,33 @@ class Incident extends Model
         'cost' => 'integer',
     ];
 
+    protected $appends = [
+        'incident_type_label',
+        'resolution_type_label',
+        'severity_label',
+        'severity_color',
+    ];
+
+    public function getIncidentTypeLabelAttribute(): string
+    {
+        return self::INCIDENT_TYPES[$this->incident_type] ?? $this->incident_type ?? '---';
+    }
+
+    public function getResolutionTypeLabelAttribute(): string
+    {
+        return self::RESOLUTION_TYPES[$this->resolution_type] ?? $this->resolution_type ?? '---';
+    }
+
+    public function getSeverityLabelAttribute(): string
+    {
+        return self::SEVERITY_LEVELS[$this->severity]['label'] ?? $this->severity ?? '---';
+    }
+
+    public function getSeverityColorAttribute(): string
+    {
+        return self::SEVERITY_LEVELS[$this->severity]['color'] ?? 'gray';
+    }
+
     public function product()
     {
         return $this->belongsTo(Product::class);
