@@ -234,54 +234,160 @@
 
     {{-- Discovery --}}
     <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {{-- Worst CPD --}}
+        {{-- Recent Incidents --}}
         <div class="p-4 bg-white rounded-lg shadow">
-            <h3 class="pb-2 mb-3 font-semibold text-gray-800 border-b">ワーストCPD (効率低下)</h3>
-            <ul class="space-y-3">
-                @foreach($this->discovery['worst_cpd'] as $item)
-                    <li class="flex items-center justify-between text-sm">
-                        <span class="w-2/3 truncate">{{ $item['product']->name }}</span>
-                        <span class="font-mono text-red-600">¥{{ number_format($item['cpd'], 1) }}/日</span>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-
-        {{-- Hall of Fame --}}
-        <div class="p-4 bg-white rounded-lg shadow">
-            <h3 class="pb-2 mb-3 font-semibold text-gray-800 border-b">殿堂入り (長寿命製品)</h3>
-            <ul class="space-y-3">
-                 @foreach($this->discovery['hall_of_fame'] as $p)
-                    <li class="flex items-center justify-between text-sm">
-                        <span class="w-2/3 truncate">{{ $p->name }}</span>
-                        <span class="font-mono text-green-600">{{ \Carbon\Carbon::parse($p->purchase_date)->diffInYears(now()) }} 年</span>
-                    </li>
-                @endforeach
-            </ul>
+            <div class="flex items-center justify-between pb-2 mb-3 border-b">
+                <h3 class="font-semibold text-gray-800">最近のインシデント</h3>
+                <span class="flex items-center justify-center w-6 h-6 text-xs font-bold text-red-700 bg-red-100 rounded-full">
+                    {{ $this->discovery['recent_incidents']->count() }}
+                </span>
+            </div>
+            @if($this->discovery['recent_incidents']->isEmpty())
+                <div class="flex flex-col items-center justify-center py-6 text-center">
+                    <svg class="w-10 h-10 mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm text-gray-400">インシデントなし</p>
+                </div>
+            @else
+                <ul class="space-y-3">
+                    @foreach($this->discovery['recent_incidents'] as $incident)
+                        <li class="flex items-start gap-3 text-sm">
+                            <div class="flex-shrink-0 mt-0.5">
+                                @if($incident->incident_type === 'failure')
+                                    <span class="flex items-center justify-center w-6 h-6 text-red-600 bg-red-100 rounded-full">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                    </span>
+                                @elseif($incident->incident_type === 'maintenance')
+                                    <span class="flex items-center justify-center w-6 h-6 text-yellow-600 bg-yellow-100 rounded-full">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                    </span>
+                                @elseif($incident->incident_type === 'damage')
+                                    <span class="flex items-center justify-center w-6 h-6 text-blue-600 bg-blue-100 rounded-full">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                        </svg>
+                                    </span>
+                                @else
+                                    <span class="flex items-center justify-center w-6 h-6 text-gray-600 bg-gray-100 rounded-full">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-700 truncate">{{ $incident->title ?: ($incident->product->name ?? 'インシデント') }}</p>
+                                <p class="text-xs text-gray-500">
+                                    {{ $incident->product->name ?? '' }} • {{ $incident->occurred_at ? \Carbon\Carbon::parse($incident->occurred_at)->format('m/d') : '-' }}
+                                </p>
+                            </div>
+                            @if($incident->cost)
+                                <span class="text-xs font-medium text-red-600">¥{{ number_format($incident->cost) }}</span>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
 
         {{-- Alerts --}}
         <div class="p-4 bg-white rounded-lg shadow">
-            <h3 class="pb-2 mb-3 font-semibold text-gray-800 border-b">アラート</h3>
+            <div class="flex items-center justify-between pb-2 mb-3 border-b">
+                <h3 class="font-semibold text-gray-800">アラート</h3>
+                @if(!$this->discovery['alerts']->isEmpty())
+                    <span class="flex items-center justify-center w-6 h-6 text-xs font-bold text-yellow-700 bg-yellow-100 rounded-full">
+                        {{ $this->discovery['alerts']->count() }}
+                    </span>
+                @endif
+            </div>
             @if($this->discovery['alerts']->isEmpty())
-                <p class="text-sm text-gray-400">現在のアラートはありません。</p>
+                <div class="flex flex-col items-center justify-center py-6 text-center">
+                    <svg class="w-10 h-10 mb-2 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-sm text-gray-400">すべて正常です</p>
+                </div>
             @else
                 <ul class="space-y-3">
                     @foreach($this->discovery['alerts'] as $p)
-                        <li class="flex items-start gap-2 text-sm">
-                            <span class="text-yellow-500 mt-0.5">⚠️</span>
-                            <div>
-                                <div class="font-medium">{{ $p->name }}</div>
-                                <div class="text-xs text-gray-500">
-                                    @if($p->status == 'repairing') 修理中
-                                    @else 保証期間終了間近
+                        <li class="flex items-start gap-3 text-sm">
+                            <div class="flex-shrink-0 mt-0.5">
+                                @if($p->status == 'repairing')
+                                    <span class="flex items-center justify-center w-6 h-6 text-orange-600 bg-orange-100 rounded-full">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path>
+                                        </svg>
+                                    </span>
+                                @else
+                                    <span class="flex items-center justify-center w-6 h-6 text-yellow-600 bg-yellow-100 rounded-full">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-700 truncate">{{ $p->name }}</p>
+                                <p class="text-xs text-gray-500">
+                                    @if($p->status == 'repairing')
+                                        修理中
+                                    @else
+                                        保証期間: {{ \Carbon\Carbon::parse($p->warranty_expires_on)->format('Y/m/d') }}まで
                                     @endif
-                                </div>
+                                </p>
                             </div>
                         </li>
                     @endforeach
                 </ul>
             @endif
+        </div>
+
+        {{-- Quick Actions --}}
+        <div class="p-4 bg-white rounded-lg shadow">
+            <h3 class="pb-2 mb-3 font-semibold text-gray-800 border-b">クイックアクション</h3>
+            <div class="space-y-3">
+                <a href="{{ route('products.create') }}" class="flex items-center gap-3 p-3 transition-colors rounded-lg hover:bg-gray-50 group">
+                    <div class="flex items-center justify-center w-10 h-10 text-indigo-600 transition-colors bg-indigo-100 rounded-lg group-hover:bg-indigo-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-800">製品を追加</p>
+                        <p class="text-xs text-gray-500">新しい製品を登録</p>
+                    </div>
+                </a>
+                
+                <a href="{{ route('products.index') }}" class="flex items-center gap-3 p-3 transition-colors rounded-lg hover:bg-gray-50 group">
+                    <div class="flex items-center justify-center w-10 h-10 text-emerald-600 transition-colors bg-emerald-100 rounded-lg group-hover:bg-emerald-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-800">製品一覧</p>
+                        <p class="text-xs text-gray-500">すべての製品を表示</p>
+                    </div>
+                </a>
+
+                <button class="flex items-center w-full gap-3 p-3 text-left transition-colors rounded-lg hover:bg-gray-50 group">
+                    <div class="flex items-center justify-center w-10 h-10 text-gray-400 transition-colors bg-gray-100 rounded-lg group-hover:bg-gray-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-800">レポート出力</p>
+                        <p class="text-xs text-gray-400">近日公開</p>
+                    </div>
+                </button>
+            </div>
         </div>
     </div>
 </div>

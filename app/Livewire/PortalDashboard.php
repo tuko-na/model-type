@@ -208,37 +208,19 @@ class PortalDashboard extends Component
     public function discovery()
     {
         $groupId = $this->getGroupId();
-        if (!$groupId) return [];
+        if (!$groupId) return [
+            'recent_incidents' => collect(),
+            'alerts' => collect(),
+        ];
 
-        $products = Product::where('group_id', $groupId)->with('incidents')->get();
-
-        // Worst CPD Ranking
-        $cpdList = $products->map(function ($p) {
-            $days = 1;
-            if ($p->purchase_date) {
-                $start = Carbon::parse($p->purchase_date);
-                $end = ($p->status === 'disposed') ? $p->updated_at : now();
-                $days = max(1, $start->diffInDays($end));
-            }
-            $cost = ($p->price ?? 0) + $p->incidents->sum('cost');
-            return [
-                'product' => $p,
-                'cpd' => $days > 0 ? $cost / $days : 0,
-            ];
-        })->sortByDesc('cpd')->take(5);
-
-        // Hall of Fame (Longest active)
-        $hallOfFame = Product::where('group_id', $groupId)
-            ->where(function($q) {
-                $q->where('status', '!=', 'disposed')
-                  ->orWhereNull('status');
-            })
-            ->whereNotNull('purchase_date')
-            ->orderBy('purchase_date', 'asc')
+        // Recent Incidents (last 5)
+        $recentIncidents = Incident::whereHas('product', fn($q) => $q->where('group_id', $groupId))
+            ->with('product')
+            ->orderByDesc('occurred_at')
             ->take(5)
             ->get();
 
-        // Alerts
+        // Alerts: 修理中、保証期間終了間近
         $alerts = Product::where('group_id', $groupId)
             ->where(function($q) {
                 $q->where('status', 'repairing')
@@ -246,8 +228,7 @@ class PortalDashboard extends Component
             })->get();
 
         return [
-            'worst_cpd' => $cpdList,
-            'hall_of_fame' => $hallOfFame,
+            'recent_incidents' => $recentIncidents,
             'alerts' => $alerts,
         ];
     }
