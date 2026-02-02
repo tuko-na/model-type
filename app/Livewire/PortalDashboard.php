@@ -108,14 +108,17 @@ class PortalDashboard extends Component
         $product = $this->selectedProduct;
         if (!$product) return null;
 
-        // CPD Calculation
+        // Days Owned & Years Owned
         $daysOwned = 1;
+        $yearsOwned = 0;
         if ($product->purchase_date) {
             $start = Carbon::parse($product->purchase_date);
             $end = ($product->status === 'disposed') ? $product->updated_at : now();
             $daysOwned = max(1, $start->diffInDays($end));
+            $yearsOwned = round($start->diffInYears($end), 1);
         }
-        
+
+        // CPD Calculation
         $totalCost = ($product->price ?? 0) + $product->incidents->sum('cost');
         $cpd = round($totalCost / $daysOwned, 1);
 
@@ -124,19 +127,14 @@ class PortalDashboard extends Component
         $catAvgDays = $catAvgLife * 365;
         
         $catProducts = Product::where('category', $product->category)
-            ->where('group_id', $this->getGroupId()) // Restrict to own group or global? User said "Average CPD". Maybe global stats if available, but let's stick to group for isolation unless "Anonymous Global Stats" is enabled.
-            // Requirement IS-02 says statistical dashboard should be group isolated unless opted in.
-            // I will restrict to group for now.
+            ->where('group_id', $this->getGroupId())
             ->where('id', '!=', $product->id)
             ->get();
             
-        // If no other products in group, use own price or 0? 
-        // If empty, use own price.
         $avgPrice = $catProducts->count() > 0 ? $catProducts->avg('price') : ($product->price ?? 0);
-        
         $avgCpd = round($avgPrice / $catAvgDays, 1);
 
-        // Lifespan Forecast
+        // Lifespan Percentage
         $lifespanPercentage = 0;
         if ($product->purchase_date) {
              $start = Carbon::parse($product->purchase_date);
@@ -144,12 +142,65 @@ class PortalDashboard extends Component
              $lifespanPercentage = ($catAvgLife > 0) ? min(100, round(($elapsedYears / $catAvgLife) * 100)) : 0;
         }
 
+        // Stability Score Calculation
+        // Score = 100 - (incident_count * 10) - (severity_penalty)
+        // severity_penalty: critical=15, high=10, medium=5, low=2
+        $incidents = $product->incidents;
+        $incidentCount = $incidents->count();
+        
+        $severityPenalty = 0;
+        foreach ($incidents as $incident) {
+            $severityPenalty += match($incident->severity) {
+                'critical' => 15,
+                'high' => 10,
+                'medium' => 5,
+                'low' => 2,
+                default => 3,
+            };
+        }
+        
+        // Also penalize based on frequency (incidents per year)
+        $incidentsPerYear = $yearsOwned > 0 ? $incidentCount / max(1, $yearsOwned) : $incidentCount;
+        $frequencyPenalty = min(30, round($incidentsPerYear * 10));
+        
+        $stabilityScore = max(0, min(100, 100 - $severityPenalty - $frequencyPenalty));
+
+        // Timeline Data
+        $timeline = [];
+        
+        // Add purchase event
+        if ($product->purchase_date) {
+            $timeline[] = [
+                'type' => 'purchase',
+                'title' => '購入',
+                'date' => Carbon::parse($product->purchase_date)->format('Y/m/d'),
+                'timestamp' => Carbon::parse($product->purchase_date)->timestamp,
+            ];
+        }
+        
+        // Add incidents
+        foreach ($incidents->sortByDesc('occurred_at')->take(10) as $incident) {
+            $timeline[] = [
+                'type' => $incident->incident_type ?? 'other',
+                'title' => $incident->title ?? ($incident->incident_type ? (\App\Models\Incident::INCIDENT_TYPES[$incident->incident_type] ?? $incident->incident_type) : 'インシデント'),
+                'date' => $incident->occurred_at ? Carbon::parse($incident->occurred_at)->format('Y/m/d') : '-',
+                'timestamp' => $incident->occurred_at ? Carbon::parse($incident->occurred_at)->timestamp : 0,
+            ];
+        }
+        
+        // Sort by timestamp descending
+        usort($timeline, fn($a, $b) => $b['timestamp'] - $a['timestamp']);
+
         return [
             'cpd' => $cpd,
             'avg_cpd' => $avgCpd,
             'lifespan_percentage' => $lifespanPercentage,
             'category_life_years' => $catAvgLife,
             'days_owned' => $daysOwned,
+            'years_owned' => $yearsOwned,
+            'stability_score' => $stabilityScore,
+            'incident_count' => $incidentCount,
+            'timeline' => $timeline,
         ];
     }
 

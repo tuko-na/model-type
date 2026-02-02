@@ -51,44 +51,179 @@
         </div>
 
         @if($this->selectedProduct)
-            {{-- 
-                Improved x-data structure:
-                - Listens for 'product-selected' event from Livewire to update data.
-                - Uses wire:ignore on chart containers to prevent Livewire from DOM-diffing the canvas elements.
-            --}}
             <div 
                 x-data='focusMonitor(@json($this->focusMonitorData))' 
-                @product-selected.window="updateCharts($event.detail.data)"
+                @product-selected.window="updateData($event.detail.data)"
             >
-                <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-                    {{-- Left: Lifespan Forecast --}}
-                    <div class="p-4 rounded-lg bg-gray-50">
-                        <h3 class="mb-4 text-sm font-medium text-gray-500">製品寿命の予測</h3>
-                        {{-- wire:ignore prevents Livewire from re-rendering this div --}}
-                        <div class="relative w-full h-48" wire:ignore>
-                            <canvas x-ref="lifespanCanvas"></canvas>
+                {{-- 4-Panel Grid --}}
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    
+                    {{-- 1. 寿命 (Lifespan) --}}
+                    <div class="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-gray-600">寿命</h3>
+                            <div class="p-1.5 bg-blue-100 rounded-full">
+                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
                         </div>
-                        <p class="mt-2 text-sm text-center text-gray-600">
-                            カテゴリ平均: <span class="font-bold" x-text="data.category_life_years + ' 年'"></span>
-                        </p>
+                        <div class="flex items-end gap-2">
+                            <span class="text-3xl font-bold text-gray-800" x-text="data.years_owned"></span>
+                            <span class="pb-1 text-sm text-gray-500">年経過</span>
+                        </div>
+                        <div class="mt-3">
+                            <div class="flex justify-between mb-1 text-xs">
+                                <span class="text-gray-500">カテゴリ平均寿命まで</span>
+                                <span class="font-medium" x-text="data.lifespan_percentage + '%'"></span>
+                            </div>
+                            <div class="h-2 overflow-hidden bg-gray-200 rounded-full">
+                                <div 
+                                    class="h-full transition-all duration-500 rounded-full"
+                                    :class="data.lifespan_percentage >= 80 ? 'bg-red-500' : data.lifespan_percentage >= 50 ? 'bg-yellow-500' : 'bg-blue-500'"
+                                    :style="'width: ' + Math.min(100, data.lifespan_percentage) + '%'"
+                                ></div>
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500">平均: <span class="font-medium" x-text="data.category_life_years + '年'"></span></p>
+                        </div>
                     </div>
 
-                    {{-- Right: CPD Comparison --}}
-                    <div class="p-4 rounded-lg bg-gray-50">
-                        <h3 class="mb-4 text-sm font-medium text-gray-500">1日あたりのコスト (CPD) 効率</h3>
-                        {{-- wire:ignore prevents Livewire from re-rendering this div --}}
-                        <div class="relative w-full h-48" wire:ignore>
-                             <canvas x-ref="cpdCanvas"></canvas>
+                    {{-- 2. 安定スコア (Stability Score) --}}
+                    <div class="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-gray-600">安定スコア</h3>
+                            <div class="p-1.5 bg-green-100 rounded-full">
+                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                            </div>
                         </div>
-                         <p class="mt-2 text-sm text-center text-gray-600">
-                            自分のCPD: <span class="font-bold" x-text="'¥' + new Intl.NumberFormat().format(data.cpd)"></span> vs 平均: ¥<span x-text="new Intl.NumberFormat().format(data.avg_cpd)"></span>
-                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="relative w-16 h-16">
+                                <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                    <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E5E7EB" stroke-width="3"></circle>
+                                    <circle 
+                                        cx="18" cy="18" r="15.9" fill="none" 
+                                        :stroke="data.stability_score >= 80 ? '#10B981' : data.stability_score >= 50 ? '#F59E0B' : '#EF4444'"
+                                        stroke-width="3"
+                                        stroke-linecap="round"
+                                        :stroke-dasharray="(data.stability_score * 100 / 100) + ' 100'"
+                                    ></circle>
+                                </svg>
+                                <span class="absolute inset-0 flex items-center justify-center text-lg font-bold text-gray-800" x-text="data.stability_score"></span>
+                            </div>
+                            <div class="flex-1">
+                                <div 
+                                    class="text-sm font-semibold"
+                                    :class="data.stability_score >= 80 ? 'text-green-600' : data.stability_score >= 50 ? 'text-yellow-600' : 'text-red-600'"
+                                    x-text="data.stability_score >= 80 ? '優良' : data.stability_score >= 50 ? '普通' : '要注意'"
+                                ></div>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    インシデント: <span class="font-medium" x-text="data.incident_count + '件'"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-xs text-gray-500">故障頻度と重大度から算出</p>
+                    </div>
+
+                    {{-- 3. 集合知との比較 (Public Stats) --}}
+                    <div class="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-gray-600">集合知との比較</h3>
+                            <div class="p-1.5 bg-purple-100 rounded-full">
+                                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        @if($this->isPublicDataEnabled ?? false)
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-500">あなたのCPD</span>
+                                    <span class="text-sm font-semibold" x-text="'¥' + new Intl.NumberFormat().format(data.cpd)"></span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs text-gray-500">全体平均</span>
+                                    <span class="text-sm font-medium text-gray-600" x-text="'¥' + new Intl.NumberFormat().format(data.public_avg_cpd || data.avg_cpd)"></span>
+                                </div>
+                                <div class="pt-2 mt-2 border-t border-purple-200">
+                                    <div 
+                                        class="text-sm font-semibold flex items-center gap-1"
+                                        :class="data.cpd <= data.avg_cpd ? 'text-green-600' : 'text-red-600'"
+                                    >
+                                        <svg x-show="data.cpd <= data.avg_cpd" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                                        </svg>
+                                        <svg x-show="data.cpd > data.avg_cpd" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                        </svg>
+                                        <span x-text="data.cpd <= data.avg_cpd ? '平均より効率的' : '平均より高コスト'"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <div class="flex flex-col items-center justify-center py-4 text-center">
+                                <div class="p-3 mb-2 bg-purple-100 rounded-full">
+                                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-gray-500">全体統計モードで</p>
+                                <p class="text-xs text-gray-500">利用可能になります</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    {{-- 4. タイムライン (Timeline) --}}
+                    <div class="p-4 rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-sm font-medium text-gray-600">タイムライン</h3>
+                            <div class="p-1.5 bg-orange-100 rounded-full">
+                                <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="space-y-2 max-h-32 overflow-y-auto">
+                            <template x-if="data.timeline && data.timeline.length > 0">
+                                <template x-for="(event, index) in data.timeline.slice(0, 5)" :key="index">
+                                    <div class="flex items-start gap-2 text-xs">
+                                        <div 
+                                            class="w-2 h-2 mt-1 rounded-full flex-shrink-0"
+                                            :class="{
+                                                'bg-red-500': event.type === 'failure',
+                                                'bg-yellow-500': event.type === 'maintenance',
+                                                'bg-blue-500': event.type === 'damage',
+                                                'bg-green-500': event.type === 'purchase',
+                                                'bg-gray-400': !['failure', 'maintenance', 'damage', 'purchase'].includes(event.type)
+                                            }"
+                                        ></div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-medium text-gray-700 truncate" x-text="event.title"></p>
+                                            <p class="text-gray-400" x-text="event.date"></p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template x-if="!data.timeline || data.timeline.length === 0">
+                                <div class="flex flex-col items-center justify-center py-2 text-center">
+                                    <svg class="w-8 h-8 mb-1 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                    <p class="text-xs text-gray-400">イベントなし</p>
+                                </div>
+                            </template>
+                        </div>
+                        <template x-if="data.timeline && data.timeline.length > 5">
+                            <p class="mt-2 text-xs text-center text-orange-600 cursor-pointer hover:underline">
+                                <span x-text="'他 ' + (data.timeline.length - 5) + ' 件'"></span>
+                            </p>
+                        </template>
                     </div>
                 </div>
                 
                 <div class="flex gap-4 mt-6">
                      <a href="{{ route('incidents.create', ['product_id' => $this->selectedProduct->id]) }}" class="px-4 py-2 text-sm text-white transition bg-red-600 rounded hover:bg-red-700">不具合を報告</a>
-                     {{-- Placeholder for Note --}}
                      <button class="px-4 py-2 text-sm text-gray-700 transition bg-gray-200 rounded hover:bg-gray-300">メモを追加</button>
                 </div>
             </div>
@@ -156,112 +291,14 @@
         const registerFocusMonitor = () => {
             Alpine.data('focusMonitor', (initialData) => ({
                 data: initialData,
-                lifespanChartInstance: null,
-                cpdChartInstance: null,
 
                 init() {
                     // console.log('Alpine Init with data:', this.data);
-                    if (this.data) {
-                        this.initCharts();
-                    }
                 },
 
-                updateCharts(newData) {
+                updateData(newData) {
                     // console.log('Data received:', newData);
                     this.data = newData;
-                    // Instead of partial updates, we destroy and re-create.
-                    // This ensures the chart is not lost and triggers the entrance animation every time.
-                    this.initCharts();
-                },
-
-                initCharts() {
-                    if (!window.Chart) {
-                        console.warn('Chart.js not ready, retrying in 100ms...');
-                        setTimeout(() => this.initCharts(), 100);
-                        return;
-                    }
-
-                    // Destroy old instances just in case
-                    if (this.lifespanChartInstance) {
-                        this.lifespanChartInstance.destroy();
-                    }
-                    if (this.cpdChartInstance) {
-                        this.cpdChartInstance.destroy();
-                    }
-
-                    // Lifespan Chart
-                    if (this.$refs.lifespanCanvas) {
-                        const ctx1 = this.$refs.lifespanCanvas.getContext('2d');
-                        this.lifespanChartInstance = new window.Chart(ctx1, {
-                            type: 'doughnut',
-                            data: {
-                                labels: ['使用済み', '残り'],
-                                datasets: [{
-                                    data: [this.data.lifespan_percentage, 100 - this.data.lifespan_percentage],
-                                    backgroundColor: ['#4F46E5', '#E5E7EB'],
-                                    borderWidth: 0
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                cutout: '70%',
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: { enabled: false }
-                                }
-                            },
-                            plugins: [{
-                                id: 'textCenter',
-                                beforeDraw: function(chart) {
-                                    var width = chart.width,
-                                        height = chart.height,
-                                        ctx = chart.ctx;
-                                    ctx.restore();
-                                    var fontSize = (height / 114).toFixed(2);
-                                    ctx.font = "bold " + fontSize + "em sans-serif";
-                                    ctx.textBaseline = "middle";
-                                    var text = Math.round(chart.data.datasets[0].data[0]) + "%",
-                                        textX = Math.round((width - ctx.measureText(text).width) / 2),
-                                        textY = height / 2;
-                                    ctx.fillStyle = "#374151";
-                                    ctx.fillText(text, textX, textY);
-                                    ctx.save();
-                                }
-                            }]
-                        });
-                    }
-
-                    // CPD Chart
-                    if (this.$refs.cpdCanvas) {
-                        const ctx2 = this.$refs.cpdCanvas.getContext('2d');
-                        this.cpdChartInstance = new window.Chart(ctx2, {
-                            type: 'bar',
-                            data: {
-                                labels: ['自分の製品', 'カテゴリ平均'],
-                                datasets: [{
-                                    label: '1日あたりのコスト (¥)',
-                                    data: [this.data.cpd, this.data.avg_cpd],
-                                    backgroundColor: [
-                                        this.data.cpd > this.data.avg_cpd ? '#EF4444' : '#10B981',
-                                        '#9CA3AF'
-                                    ],
-                                    borderRadius: 4
-                                }]
-                            },
-                            options: {
-                                indexAxis: 'y',
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: { display: false }
-                                },
-                                scales: {
-                                    x: { beginAtZero: true }
-                                }
-                            }
-                        });
-                    }
                 }
             }));
         };
