@@ -4,14 +4,11 @@
                 {{ __('Dashboard') }}
             </h2>
             <div class="flex p-1 bg-gray-200 rounded-lg shadow-inner">
-                @php
-                    $isPublic = session('view_mode') === 'public';
-                @endphp
-                <a href="{{ route('mode.switch', 'private') }}" class="px-4 py-2 rounded-md text-sm font-medium transition-all {{ !$isPublic ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900' }}">
-                    プライベート
+                <a href="{{ route('dashboard') }}" class="px-4 py-2 rounded-md text-sm font-medium transition-all bg-white shadow text-gray-900">
+                    マイダッシュボード
                 </a>
-                <a href="{{ route('mode.switch', 'public') }}" class="px-4 py-2 rounded-md text-sm font-medium transition-all {{ $isPublic ? 'bg-emerald-600 shadow text-white' : 'text-gray-500 hover:text-gray-700' }}">
-                    全体統計
+                <a href="{{ route('public.dashboard') }}" class="px-4 py-2 rounded-md text-sm font-medium transition-all text-gray-500 hover:text-gray-700">
+                    集合知
                 </a>
             </div>
         </div>
