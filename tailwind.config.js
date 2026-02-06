@@ -20,6 +20,13 @@ export default {
         'text-green-600', 'text-yellow-600', 'text-orange-600', 'text-red-600',
         'text-green-800', 'text-yellow-800', 'text-orange-800', 'text-red-800',
         'bg-green-100', 'bg-yellow-100', 'bg-orange-100', 'bg-red-100',
+        // 深刻度リング用
+        'stroke-emerald-500', 'stroke-amber-500', 'stroke-orange-500', 'stroke-red-500',
+        'stroke-blue-500', 'stroke-green-500',
+        'text-emerald-600', 'text-amber-600', 'text-orange-600',
+        'text-emerald-500', 'text-amber-500', 'text-orange-500',
+        // インシデント種別バー用
+        'bg-amber-500', 'bg-blue-500', 'bg-gray-500',
     ],
 
     theme: {
