@@ -4,17 +4,17 @@
             {{ __('製品統計 - 集合知ダッシュボード') }}
         </h2>
         <div class="flex p-1 bg-gray-200 rounded-lg shadow-inner">
-            <a href="{{ route('dashboard') }}" class="px-4 py-2 rounded-md text-sm font-medium transition-all text-gray-500 hover:text-gray-900">
+            <a href="{{ route('dashboard') }}" class="px-4 py-2 text-sm font-medium text-gray-500 transition-all rounded-md hover:text-gray-900">
                 マイダッシュボード
             </a>
-            <a href="{{ route('public.dashboard') }}" class="px-4 py-2 rounded-md text-sm font-medium transition-all bg-emerald-600 shadow text-white">
+            <a href="{{ route('public.dashboard') }}" class="px-4 py-2 text-sm font-medium text-white transition-all rounded-md shadow bg-emerald-600">
                 集合知
             </a>
         </div>
     </div>
 </x-slot>
 
-<div class="py-8 bg-gradient-to-br from-slate-50 via-gray-50 to-indigo-50 min-h-screen">
+<div class="min-h-screen py-8 bg-gradient-to-br from-slate-50 via-gray-50 to-indigo-50">
     <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
         {{-- 検索セクション --}}
         <div class="mb-8">
@@ -42,13 +42,13 @@
                     type="text" 
                     wire:model.live.debounce.300ms="search"
                     placeholder="型番で検索 (例: iPhone 15 Pro, WH-1000XM5)" 
-                    class="w-full px-6 py-4 pl-12 bg-white border-0 rounded-2xl shadow-lg shadow-gray-200/50 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-gray-800 placeholder-gray-400 text-lg transition-all duration-300"
+                    class="w-full px-6 py-4 pl-12 text-lg text-gray-800 placeholder-gray-400 transition-all duration-300 bg-white border-0 shadow-lg rounded-2xl shadow-gray-200/50 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 >
                 <svg class="absolute w-6 h-6 text-gray-400 left-4 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
                 @if($search)
-                    <button wire:click="$set('search', '')" class="absolute text-gray-400 right-4 top-4 hover:text-gray-600 transition-colors">
+                    <button wire:click="$set('search', '')" class="absolute text-gray-400 transition-colors right-4 top-4 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -58,15 +58,15 @@
 
             {{-- 検索結果ドロップダウン --}}
             @if($this->searchResults->count() > 0)
-                <div class="mt-3 bg-white rounded-2xl shadow-xl border border-gray-100 divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                <div class="mt-3 overflow-y-auto bg-white border border-gray-100 divide-y divide-gray-100 shadow-xl rounded-2xl max-h-80">
                     @foreach($this->searchResults as $result)
-                        <div class="flex items-center justify-between p-4 hover:bg-indigo-50/50 cursor-pointer transition-all duration-200" wire:click="selectProduct({{ $result['product_ids'][0] }})">
+                        <div class="flex items-center justify-between p-4 transition-all duration-200 cursor-pointer hover:bg-indigo-50/50" wire:click="selectProduct({{ $result['product_ids'][0] }})">
                             <div class="flex-1">
                                 <div class="flex items-center gap-3">
                                     <span class="font-bold text-gray-900">{{ $result['model_number'] }}</span>
                                     <span class="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full">{{ $result['manufacturer'] }}</span>
                                 </div>
-                                <p class="text-sm text-gray-500 mt-1">{{ $result['name'] }}</p>
+                                <p class="mt-1 text-sm text-gray-500">{{ $result['name'] }}</p>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="text-right">
@@ -81,7 +81,7 @@
                     @endforeach
                 </div>
             @elseif(strlen($search) >= 2)
-                <div class="mt-3 py-12 text-center bg-white rounded-2xl shadow-lg">
+                <div class="py-12 mt-3 text-center bg-white shadow-lg rounded-2xl">
                     <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -94,16 +94,16 @@
         @if($this->productAnalytics)
             @php $analytics = $this->productAnalytics; @endphp
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {{-- 左カラム - 製品情報 --}}
-                <div class="lg:col-span-4 space-y-6">
+                <div class="space-y-6 lg:col-span-4">
                     {{-- 製品カード --}}
-                    <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 text-center relative overflow-hidden">
+                    <div class="relative p-8 overflow-hidden text-center bg-white shadow-xl rounded-3xl shadow-gray-200/50">
                         {{-- 装飾グラデーション --}}
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-100 to-transparent rounded-bl-full"></div>
+                        <div class="absolute top-0 right-0 w-32 h-32 rounded-bl-full bg-gradient-to-bl from-indigo-100 to-transparent"></div>
                         
                         {{-- 製品アイコン --}}
-                        <div class="relative z-10 w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                        <div class="relative z-10 flex items-center justify-center w-32 h-32 mx-auto mb-6 shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl shadow-indigo-200">
                             @php
                                 $categoryIcons = [
                                     'Smartphone' => '📱',
@@ -117,9 +117,9 @@
                             <span class="text-5xl">{{ $categoryIcons[$analytics['product']['category']] ?? '📦' }}</span>
                         </div>
 
-                        <h2 class="text-2xl font-bold text-gray-900 mb-1">{{ $analytics['product']['model_number'] }}</h2>
-                        <p class="text-gray-500 mb-1">{{ $analytics['product']['manufacturer'] }} {{ $analytics['product']['name'] }}</p>
-                        <p class="text-sm text-indigo-600 font-medium">{{ $analytics['sample_count'] }}人のユーザーデータに基づく</p>
+                        <h2 class="mb-1 text-2xl font-bold text-gray-900">{{ $analytics['product']['model_number'] }}</h2>
+                        <p class="mb-1 text-gray-500">{{ $analytics['product']['manufacturer'] }} {{ $analytics['product']['name'] }}</p>
+                        <p class="text-sm font-medium text-indigo-600">{{ $analytics['sample_count'] }}人のユーザーデータに基づく</p>
 
                         {{-- Oura風リングスコア --}}
                         <div class="grid grid-cols-3 gap-4 mt-8">
@@ -190,32 +190,32 @@
                             </div>
                         </div>
 
-                        <button wire:click="clearSelection" class="mt-8 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all duration-200 text-sm w-full">
+                        <button wire:click="clearSelection" class="w-full px-6 py-3 mt-8 text-sm font-medium text-gray-700 transition-all duration-200 bg-gray-100 hover:bg-gray-200 rounded-xl">
                             ← 検索に戻る
                         </button>
                     </div>
 
                     {{-- スペック表 --}}
-                    <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6">
-                        <h3 class="text-lg font-bold text-gray-900 mb-4">基本情報</h3>
+                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                        <h3 class="mb-4 text-lg font-bold text-gray-900">基本情報</h3>
                         <div class="space-y-4">
-                            <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
                                 <span class="text-sm text-gray-500">カテゴリ</span>
                                 <span class="text-sm font-medium text-gray-900">{{ $analytics['product']['category_label'] }}</span>
                             </div>
-                            <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
                                 <span class="text-sm text-gray-500">メーカー</span>
                                 <span class="text-sm font-medium text-gray-900">{{ $analytics['product']['manufacturer'] }}</span>
                             </div>
-                            <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
                                 <span class="text-sm text-gray-500">平均購入価格</span>
                                 <span class="text-sm font-medium text-gray-900">¥{{ number_format($analytics['price']['avg']) }}</span>
                             </div>
-                            <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
                                 <span class="text-sm text-gray-500">価格帯</span>
                                 <span class="text-sm font-medium text-gray-900">¥{{ number_format($analytics['price']['min']) }} 〜 ¥{{ number_format($analytics['price']['max']) }}</span>
                             </div>
-                            <div class="flex justify-between items-center py-3">
+                            <div class="flex items-center justify-between py-3">
                                 <span class="text-sm text-gray-500">サンプル数</span>
                                 <span class="text-sm font-medium text-gray-900">{{ $analytics['sample_count'] }}件</span>
                             </div>
@@ -224,22 +224,22 @@
                 </div>
 
                 {{-- 右カラム - データビジュアライゼーション --}}
-                <div class="lg:col-span-8 space-y-6">
+                <div class="space-y-6 lg:col-span-8">
                     {{-- 総合スコアバナー --}}
                     @php
                         $overallScore = round(($analytics['reliability_score'] * 0.4) + ($cpdScore * 0.3) + ($lifespanScore * 0.3));
                     @endphp
-                    <div class="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-3xl p-8 text-center overflow-hidden shadow-xl shadow-indigo-200/50">
+                    <div class="relative p-8 overflow-hidden text-center shadow-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-3xl shadow-indigo-200/50">
                         {{-- アニメーション背景 --}}
                         <div class="absolute inset-0 opacity-30">
-                            <div class="absolute top-0 left-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
-                            <div class="absolute bottom-0 right-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+                            <div class="absolute top-0 left-0 w-64 h-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 blur-3xl animate-pulse"></div>
+                            <div class="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 rounded-full w-96 h-96 bg-purple-400/20 blur-3xl"></div>
                         </div>
                         
                         <div class="relative z-10">
-                            <div class="text-7xl font-bold text-white mb-2">{{ $overallScore }}</div>
-                            <div class="text-xl text-white/90 font-medium">総合スコア</div>
-                            <p class="text-sm text-white/70 mt-3 max-w-md mx-auto">
+                            <div class="mb-2 font-bold text-white text-7xl">{{ $overallScore }}</div>
+                            <div class="text-xl font-medium text-white/90">総合スコア</div>
+                            <p class="max-w-md mx-auto mt-3 text-sm text-white/70">
                                 信頼性、コストパフォーマンス、製品寿命を総合的に評価したスコアです
                             </p>
                         </div>
@@ -248,80 +248,80 @@
                     {{-- メトリクスグリッド --}}
                     <div class="grid grid-cols-2 gap-4">
                         {{-- 実質コスト --}}
-                        <div class="bg-white rounded-2xl p-5 shadow-lg shadow-gray-200/50 border border-gray-100">
+                        <div class="p-5 bg-white border border-gray-100 shadow-lg rounded-2xl shadow-gray-200/50">
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-sm text-gray-500 font-medium">実質コスト (CPD)</span>
+                                <span class="text-sm font-medium text-gray-500">実質コスト (CPD)</span>
                                 @if($analytics['avg_cpd'] < $this->globalStats['global_avg_cpd'])
-                                    <span class="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-semibold">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">
                                         -{{ round((1 - $analytics['avg_cpd'] / max(1, $this->globalStats['global_avg_cpd'])) * 100) }}%
                                     </span>
                                 @else
-                                    <span class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded-full font-semibold">
+                                    <span class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">
                                         +{{ round(($analytics['avg_cpd'] / max(1, $this->globalStats['global_avg_cpd']) - 1) * 100) }}%
                                     </span>
                                 @endif
                             </div>
-                            <div class="text-3xl font-bold text-gray-900 mb-1">¥{{ number_format($analytics['avg_cpd']) }}</div>
-                            <p class="text-xs text-gray-400">全体平均 <span class="text-indigo-600 font-semibold">¥{{ number_format($this->globalStats['global_avg_cpd']) }}/日</span></p>
+                            <div class="mb-1 text-3xl font-bold text-gray-900">¥{{ number_format($analytics['avg_cpd']) }}</div>
+                            <p class="text-xs text-gray-400">全体平均 <span class="font-semibold text-indigo-600">¥{{ number_format($this->globalStats['global_avg_cpd']) }}/日</span></p>
                         </div>
 
                         {{-- 平均寿命 --}}
-                        <div class="bg-white rounded-2xl p-5 shadow-lg shadow-gray-200/50 border border-gray-100">
+                        <div class="p-5 bg-white border border-gray-100 shadow-lg rounded-2xl shadow-gray-200/50">
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-sm text-gray-500 font-medium">平均寿命</span>
+                                <span class="text-sm font-medium text-gray-500">平均寿命</span>
                                 @if($analytics['avg_lifespan_years'] >= $analytics['category_life_years'])
-                                    <span class="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-semibold">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">
                                         +{{ round(($analytics['avg_lifespan_years'] / max(1, $analytics['category_life_years']) - 1) * 100) }}%
                                     </span>
                                 @else
-                                    <span class="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-full font-semibold">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">
                                         -{{ round((1 - $analytics['avg_lifespan_years'] / max(1, $analytics['category_life_years'])) * 100) }}%
                                     </span>
                                 @endif
                             </div>
-                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ $analytics['avg_lifespan_years'] }}年</div>
-                            <p class="text-xs text-gray-400">カテゴリ平均 <span class="text-indigo-600 font-semibold">{{ $analytics['category_life_years'] }}年</span></p>
+                            <div class="mb-1 text-3xl font-bold text-gray-900">{{ $analytics['avg_lifespan_years'] }}年</div>
+                            <p class="text-xs text-gray-400">カテゴリ平均 <span class="font-semibold text-indigo-600">{{ $analytics['category_life_years'] }}年</span></p>
                         </div>
 
                         {{-- インシデント発生率 --}}
-                        <div class="bg-white rounded-2xl p-5 shadow-lg shadow-gray-200/50 border border-gray-100">
+                        <div class="p-5 bg-white border border-gray-100 shadow-lg rounded-2xl shadow-gray-200/50">
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-sm text-gray-500 font-medium">インシデント発生率</span>
+                                <span class="text-sm font-medium text-gray-500">インシデント発生率</span>
                                 @if($analytics['incident_rate'] < $this->globalStats['global_incident_rate'])
-                                    <span class="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-semibold">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700">
                                         -{{ round(($this->globalStats['global_incident_rate'] - $analytics['incident_rate'])) }}pt
                                     </span>
                                 @else
-                                    <span class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded-full font-semibold">
+                                    <span class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">
                                         +{{ round(($analytics['incident_rate'] - $this->globalStats['global_incident_rate'])) }}pt
                                     </span>
                                 @endif
                             </div>
-                            <div class="text-3xl font-bold text-gray-900 mb-1">{{ $analytics['incident_rate'] }}%</div>
-                            <p class="text-xs text-gray-400">全体平均 <span class="text-indigo-600 font-semibold">{{ $this->globalStats['global_incident_rate'] }}%</span></p>
+                            <div class="mb-1 text-3xl font-bold text-gray-900">{{ $analytics['incident_rate'] }}%</div>
+                            <p class="text-xs text-gray-400">全体平均 <span class="font-semibold text-indigo-600">{{ $this->globalStats['global_incident_rate'] }}%</span></p>
                         </div>
 
                         {{-- 修理コスト --}}
-                        <div class="bg-white rounded-2xl p-5 shadow-lg shadow-gray-200/50 border border-gray-100">
+                        <div class="p-5 bg-white border border-gray-100 shadow-lg rounded-2xl shadow-gray-200/50">
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-sm text-gray-500 font-medium">平均修理費用</span>
+                                <span class="text-sm font-medium text-gray-500">平均修理費用</span>
                             </div>
-                            <div class="text-3xl font-bold text-gray-900 mb-1">¥{{ number_format($analytics['avg_repair_cost']) }}</div>
+                            <div class="mb-1 text-3xl font-bold text-gray-900">¥{{ number_format($analytics['avg_repair_cost']) }}</div>
                             <p class="text-xs text-gray-400">インシデント発生時の平均費用</p>
                         </div>
                     </div>
 
                     {{-- 時系列チャート --}}
-                    <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6" wire:ignore>
-                        <h3 class="text-lg font-bold text-gray-900 mb-6">購入後の月数別インシデント発生パターン</h3>
+                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50" wire:ignore>
+                        <h3 class="mb-6 text-lg font-bold text-gray-900">購入後の月数別インシデント発生パターン</h3>
                         <div class="h-64">
                             <canvas id="incidentTimelineChart"></canvas>
                         </div>
                     </div>
 
                     {{-- よくあるインシデント --}}
-                    <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6">
-                        <h3 class="text-lg font-bold text-gray-900 mb-6">よくあるインシデント（深刻度順）</h3>
+                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                        <h3 class="mb-6 text-lg font-bold text-gray-900">よくあるインシデント（深刻度順）</h3>
                         @if(!empty($analytics['top_problems']))
                             <div class="space-y-4">
                                 @foreach($analytics['top_problems'] as $index => $problem)
@@ -357,10 +357,10 @@
                     </div>
 
                     {{-- インシデント種別 & 深刻度 --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         {{-- インシデント種別分布 --}}
-                        <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6">
-                            <h4 class="text-lg font-bold text-gray-900 mb-4">インシデント種別</h4>
+                        <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                            <h4 class="mb-4 text-lg font-bold text-gray-900">インシデント種別</h4>
                             @if(!empty($analytics['incident_type_distribution']))
                                 <div class="space-y-4">
                                     @php
@@ -379,7 +379,7 @@
                                                 <span class="font-medium text-gray-700">{{ \App\Models\Incident::INCIDENT_TYPES[$type] ?? $type }}</span>
                                                 <span class="text-gray-500">{{ $count }}件 ({{ $percentage }}%)</span>
                                             </div>
-                                            <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <div class="h-2 overflow-hidden bg-gray-100 rounded-full">
                                                 <div class="h-full {{ $typeColors[$type] ?? 'bg-gray-500' }} rounded-full transition-all duration-500" style="width: {{ $percentage }}%"></div>
                                             </div>
                                         </div>
@@ -393,8 +393,8 @@
                         </div>
 
                         {{-- 深刻度分布 --}}
-                        <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6">
-                            <h4 class="text-lg font-bold text-gray-900 mb-4">深刻度分布</h4>
+                        <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                            <h4 class="mb-4 text-lg font-bold text-gray-900">深刻度分布</h4>
                             @if(!empty($analytics['severity_distribution']))
                                 <div class="grid grid-cols-4 gap-3">
                                     @php
@@ -439,28 +439,28 @@
                     </div>
 
                     {{-- ライフサイクルコスト予測 --}}
-                    <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-6">
-                        <h3 class="text-lg font-bold text-gray-900 mb-6">
+                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                        <h3 class="mb-6 text-lg font-bold text-gray-900">
                             <svg class="inline-block w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                             </svg>
                             ライフサイクルコスト予測
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                             <div class="p-4 bg-gray-50 rounded-2xl">
-                                <p class="text-sm text-gray-500 mb-1">購入価格</p>
+                                <p class="mb-1 text-sm text-gray-500">購入価格</p>
                                 <p class="text-xl font-bold text-gray-900">¥{{ number_format($analytics['price']['avg']) }}</p>
                             </div>
                             <div class="p-4 bg-amber-50 rounded-2xl">
-                                <p class="text-sm text-gray-500 mb-1">予想メンテナンス</p>
+                                <p class="mb-1 text-sm text-gray-500">予想メンテナンス</p>
                                 <p class="text-xl font-bold text-amber-600">+¥{{ number_format($analytics['lifecycle_cost'] - $analytics['price']['avg']) }}</p>
                             </div>
                             <div class="p-4 bg-gray-50 rounded-2xl">
-                                <p class="text-sm text-gray-500 mb-1">予想寿命</p>
+                                <p class="mb-1 text-sm text-gray-500">予想寿命</p>
                                 <p class="text-xl font-bold text-gray-900">{{ $analytics['category_life_years'] }}年</p>
                             </div>
                             <div class="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl">
-                                <p class="text-sm text-white/80 mb-1">総コスト</p>
+                                <p class="mb-1 text-sm text-white/80">総コスト</p>
                                 <p class="text-xl font-bold text-white">¥{{ number_format($analytics['lifecycle_cost']) }}</p>
                             </div>
                         </div>
@@ -469,46 +469,46 @@
             </div>
         @else
             {{-- 製品未選択時：全体統計を表示 --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
+            <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-3">
+                <div class="p-8 text-center bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                    <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 shadow-lg bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-blue-200">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                         </svg>
                     </div>
-                    <p class="text-gray-500 text-sm mb-2">登録製品数</p>
+                    <p class="mb-2 text-sm text-gray-500">登録製品数</p>
                     <p class="text-4xl font-bold text-gray-900">{{ number_format($this->globalStats['total_products']) }}</p>
                 </div>
 
-                <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-200">
+                <div class="p-8 text-center bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                    <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 shadow-lg bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl shadow-red-200">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                     </div>
-                    <p class="text-gray-500 text-sm mb-2">報告インシデント数</p>
+                    <p class="mb-2 text-sm text-gray-500">報告インシデント数</p>
                     <p class="text-4xl font-bold text-gray-900">{{ number_format($this->globalStats['total_incidents']) }}</p>
                 </div>
 
-                <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                <div class="p-8 text-center bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                    <div class="flex items-center justify-center w-16 h-16 mx-auto mb-4 shadow-lg bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-emerald-200">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
-                    <p class="text-gray-500 text-sm mb-2">全体平均CPD</p>
+                    <p class="mb-2 text-sm text-gray-500">全体平均CPD</p>
                     <p class="text-4xl font-bold text-gray-900">¥{{ number_format($this->globalStats['global_avg_cpd']) }}</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-16 text-center">
-                <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center">
+            <div class="p-16 text-center bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                <div class="flex items-center justify-center w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl">
                     <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">製品を検索してください</h3>
-                <p class="text-gray-500 max-w-md mx-auto">型番、製品名、またはメーカー名で検索すると、集合知に基づいた詳細な分析結果を表示します。</p>
+                <h3 class="mb-3 text-2xl font-bold text-gray-800">製品を検索してください</h3>
+                <p class="max-w-md mx-auto text-gray-500">型番、製品名、またはメーカー名で検索すると、集合知に基づいた詳細な分析結果を表示します。</p>
             </div>
         @endif
     </div>
