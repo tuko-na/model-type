@@ -207,6 +207,54 @@ class PublicDashboard extends Component
             }
         }
 
+        // 6.5 寿命分布（購入からの経過年数）
+        $lifespanDistribution = [
+            '0-1年' => 0,
+            '1-2年' => 0,
+            '2-3年' => 0,
+            '3-4年' => 0,
+            '4年以上' => 0,
+        ];
+        foreach ($sameModelProducts as $p) {
+            if (!$p->purchase_date) continue;
+            $years = Carbon::parse($p->purchase_date)->diffInYears(now());
+            $bucket = match(true) {
+                $years < 1 => '0-1年',
+                $years < 2 => '1-2年',
+                $years < 3 => '2-3年',
+                $years < 4 => '3-4年',
+                default => '4年以上'
+            };
+            $lifespanDistribution[$bucket] = ($lifespanDistribution[$bucket] ?? 0) + 1;
+        }
+
+        // 6.6 コスト推移（購入後のメンテナンス費用）
+        $costTrend = [
+            '0-3ヶ月' => 0,
+            '3-6ヶ月' => 0,
+            '6-12ヶ月' => 0,
+            '1-2年' => 0,
+            '2-3年' => 0,
+            '3年以上' => 0,
+        ];
+        foreach ($sameModelProducts as $p) {
+            if (!$p->purchase_date) continue;
+            $purchaseDate = Carbon::parse($p->purchase_date);
+            foreach ($p->incidents as $incident) {
+                if (!$incident->occurred_at || $incident->cost <= 0) continue;
+                $monthsAfterPurchase = $purchaseDate->diffInMonths($incident->occurred_at);
+                $bucket = match(true) {
+                    $monthsAfterPurchase < 3 => '0-3ヶ月',
+                    $monthsAfterPurchase < 6 => '3-6ヶ月',
+                    $monthsAfterPurchase < 12 => '6-12ヶ月',
+                    $monthsAfterPurchase < 24 => '1-2年',
+                    $monthsAfterPurchase < 36 => '2-3年',
+                    default => '3年以上'
+                };
+                $costTrend[$bucket] = ($costTrend[$bucket] ?? 0) + $incident->cost;
+            }
+        }
+
         // 7. よくある問題TOP5
         $topProblems = $allIncidents
             ->groupBy('incident_type')
@@ -254,6 +302,20 @@ class PublicDashboard extends Component
         $expectedMaintenanceCost = $avgRepairCost * ($allIncidents->count() / max(1, $sampleCount));
         $lifecycleCost = $avgPrice + ($expectedMaintenanceCost * $categoryLifeYears);
 
+        $globalStats = $this->globalStats;
+        $cpdScore = max(0, min(100, 100 - ($avgCpd / 2)));
+        $lifespanScore = $categoryLifeYears > 0 ? min(100, ($avgLifespanYears / $categoryLifeYears) * 100) : 0;
+        $repairScore = 100;
+        if (($globalStats['global_avg_repair_cost'] ?? 0) > 0) {
+            $repairScore = max(0, min(100, 100 - (($avgRepairCost - $globalStats['global_avg_repair_cost']) / $globalStats['global_avg_repair_cost']) * 50));
+        }
+        $globalReliabilityScore = max(0, 100 - ($globalStats['global_incident_rate'] ?? 0));
+        $globalCpdScore = max(0, min(100, 100 - (($globalStats['global_avg_cpd'] ?? 0) / 2)));
+        $globalLifespanScore = ($globalStats['global_avg_lifespan_years'] ?? 0) > 0 && $categoryLifeYears > 0
+            ? min(100, (($globalStats['global_avg_lifespan_years'] / $categoryLifeYears) * 100))
+            : 0;
+        $globalRepairScore = 100;
+
         return [
             'product' => [
                 'id' => $product->id,
@@ -272,6 +334,8 @@ class PublicDashboard extends Component
             'incident_type_distribution' => $incidentTypeDistribution,
             'severity_distribution' => $severityDistribution,
             'time_patterns' => $timePatterns,
+            'lifespan_distribution' => $lifespanDistribution,
+            'cost_trend' => $costTrend,
             'top_problems' => $topProblems,
             'price' => [
                 'avg' => $avgPrice,
@@ -282,6 +346,21 @@ class PublicDashboard extends Component
             'avg_repair_cost' => $avgRepairCost,
             'lifecycle_cost' => round($lifecycleCost),
             'total_incidents' => $allIncidents->count(),
+            'radar_comparison' => [
+                'labels' => ['信頼性', 'コスパ', '寿命', '修理費用'],
+                'product' => [
+                    round($reliabilityScore, 1),
+                    round($cpdScore, 1),
+                    round($lifespanScore, 1),
+                    round($repairScore, 1),
+                ],
+                'baseline' => [
+                    round($globalReliabilityScore, 1),
+                    round($globalCpdScore, 1),
+                    round($globalLifespanScore, 1),
+                    round($globalRepairScore, 1),
+                ],
+            ],
         ];
     }
 
@@ -318,6 +397,21 @@ class PublicDashboard extends Component
             });
         $globalAvgCpd = count($allCpd) > 0 ? round(array_sum($allCpd) / count($allCpd), 1) : 0;
 
+        // 全体の平均使用年数
+        $lifespanYears = [];
+        Product::whereNotNull('purchase_date')
+            ->select('id', 'purchase_date')
+            ->chunk(200, function ($products) use (&$lifespanYears) {
+                foreach ($products as $p) {
+                    $lifespanYears[] = Carbon::parse($p->purchase_date)->diffInYears(now());
+                }
+            });
+        $globalAvgLifespanYears = count($lifespanYears) > 0 ? round(array_sum($lifespanYears) / count($lifespanYears), 1) : 0;
+
+        // 全体の平均修理費用
+        $globalAvgRepairCost = Incident::where('cost', '>', 0)->avg('cost');
+        $globalAvgRepairCost = $globalAvgRepairCost ? round($globalAvgRepairCost) : 0;
+
         // 全体の故障率
         $productsWithIncidents = Product::has('incidents')->count();
         $globalIncidentRate = $totalProducts > 0 ? round(($productsWithIncidents / $totalProducts) * 100, 1) : 0;
@@ -327,6 +421,8 @@ class PublicDashboard extends Component
             'total_incidents' => $totalIncidents,
             'category_stats' => $categoryStats,
             'global_avg_cpd' => $globalAvgCpd,
+            'global_avg_lifespan_years' => $globalAvgLifespanYears,
+            'global_avg_repair_cost' => $globalAvgRepairCost,
             'global_incident_rate' => $globalIncidentRate,
         ];
     }

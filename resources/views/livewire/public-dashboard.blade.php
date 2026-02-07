@@ -300,11 +300,42 @@
                         </div>
                     </div>
 
-                    {{-- 時系列チャート --}}
+                    {{-- タブ付きチャート --}}
                     <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50" wire:ignore>
-                        <h3 class="mb-6 text-lg font-bold text-gray-900">購入後の月数別インシデント発生パターン</h3>
-                        <div class="h-64">
-                            <canvas id="incidentTimelineChart"></canvas>
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                            <h3 class="text-lg font-bold text-gray-900">詳細チャート</h3>
+                            <div class="inline-flex p-1 bg-gray-100 rounded-2xl" data-chart-tabs>
+                                <button type="button" class="px-4 py-2 text-sm font-semibold text-indigo-600 transition rounded-xl bg-indigo-50 js-chart-tab" data-tab="incident">
+                                    インシデント分析
+                                </button>
+                                <button type="button" class="px-4 py-2 text-sm font-semibold text-gray-500 transition rounded-xl hover:text-gray-700 js-chart-tab" data-tab="lifespan">
+                                    寿命分布
+                                </button>
+                                <button type="button" class="px-4 py-2 text-sm font-semibold text-gray-500 transition rounded-xl hover:text-gray-700 js-chart-tab" data-tab="cost">
+                                    コスト推移
+                                </button>
+                            </div>
+                        </div>
+
+                        <div data-chart-panel="incident">
+                            <h4 class="mb-4 text-sm font-semibold text-gray-700">購入後の月数別インシデント件数</h4>
+                            <div class="h-64">
+                                <canvas id="incidentTimelineChart" data-time-patterns='@json($analytics['time_patterns'])'></canvas>
+                            </div>
+                        </div>
+
+                        <div class="hidden" data-chart-panel="lifespan">
+                            <h4 class="mb-4 text-sm font-semibold text-gray-700">購入からの経過年数分布</h4>
+                            <div class="h-64">
+                                <canvas id="lifespanDistributionChart" data-lifespan-distribution='@json($analytics['lifespan_distribution'])'></canvas>
+                            </div>
+                        </div>
+
+                        <div class="hidden" data-chart-panel="cost">
+                            <h4 class="mb-4 text-sm font-semibold text-gray-700">購入後のメンテナンス費用推移</h4>
+                            <div class="h-64">
+                                <canvas id="costTrendChart" data-cost-trend='@json($analytics['cost_trend'])'></canvas>
+                            </div>
                         </div>
                     </div>
 
@@ -322,9 +353,10 @@
                                         };
                                     @endphp
                                     <div class="flex items-center gap-4 p-4 rounded-2xl border-l-4 {{ $severityClass }}">
+                                        <div class="min-w-[72px] text-xs text-gray-400">{{ $problem['count'] }}件</div>
                                         <div class="flex-1">
                                             <div class="font-semibold text-gray-900">{{ $problem['label'] }}</div>
-                                            <div class="text-sm text-gray-500">{{ $problem['count'] }}件報告</div>
+                                            <div class="text-sm text-gray-500">報告件数ベースの代表的インシデント</div>
                                         </div>
                                         @if($problem['avg_cost'] > 0)
                                             <div class="text-right">
@@ -343,6 +375,14 @@
                                 <p>問題報告なし - この製品は良好な状態です！</p>
                             </div>
                         @endif
+                    </div>
+
+                    {{-- 比較レーダーチャート --}}
+                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50" wire:ignore>
+                        <h3 class="mb-6 text-lg font-bold text-gray-900">全体平均との差</h3>
+                        <div class="h-72">
+                            <canvas id="radarComparisonChart" data-radar='@json($analytics['radar_comparison'])'></canvas>
+                        </div>
                     </div>
 
                     {{-- インシデント種別 & 深刻度 --}}
@@ -513,97 +553,280 @@
         setTimeout(() => initCharts(event?.data ?? null), 100);
     });
 
-    function initCharts(productAnalytics = null) {
-        const chartElement = document.getElementById('incidentTimelineChart');
-        if (!chartElement) {
-            console.warn('[incidentTimelineChart] canvas not found');
-            return;
+    function parseChartData(value) {
+        if (!value) return null;
+        if (typeof value === 'object') return value;
+        try {
+            return JSON.parse(value);
+        } catch (error) {
+            return null;
         }
-        const rect = chartElement.getBoundingClientRect();
-        console.log('[incidentTimelineChart] canvas rect', {
-            width: rect.width,
-            height: rect.height
-        });
-        if (typeof Chart === 'undefined') {
-            console.error('[incidentTimelineChart] Chart is undefined');
-            return;
-        }
-        
-        // 既存のチャートを破棄
-        const existingChart = Chart.getChart(chartElement);
+    }
+
+    function destroyChart(canvas) {
+        if (!canvas) return;
+        const existingChart = Chart.getChart(canvas);
         if (existingChart) {
             existingChart.destroy();
         }
+    }
 
-        let timePatterns = productAnalytics?.time_patterns ?? null;
-        if (!timePatterns && chartElement.dataset.timePatterns) {
-            try {
-                timePatterns = JSON.parse(chartElement.dataset.timePatterns);
-            } catch (error) {
-                console.error('[incidentTimelineChart] invalid data-time-patterns', error);
-            }
+    function initTabs() {
+        const tabRoot = document.querySelector('[data-chart-tabs]');
+        if (!tabRoot) return;
+
+        const tabs = Array.from(tabRoot.querySelectorAll('.js-chart-tab'));
+        const panels = Array.from(document.querySelectorAll('[data-chart-panel]'));
+        if (tabs.length === 0 || panels.length === 0) return;
+
+        const setActive = (tabName) => {
+            tabRoot.dataset.activeTab = tabName;
+            tabs.forEach((tab) => {
+                const isActive = tab.dataset.tab === tabName;
+                tab.classList.toggle('bg-indigo-50', isActive);
+                tab.classList.toggle('text-indigo-600', isActive);
+                tab.classList.toggle('text-gray-500', !isActive);
+            });
+            panels.forEach((panel) => {
+                panel.classList.toggle('hidden', panel.dataset.chartPanel !== tabName);
+            });
+        };
+
+        if (!tabRoot.dataset.initialized) {
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', () => setActive(tab.dataset.tab));
+            });
+            tabRoot.dataset.initialized = 'true';
         }
 
-        console.log('[incidentTimelineChart] time_patterns', timePatterns);
+        const activeTab = tabRoot.dataset.activeTab || tabs[0]?.dataset.tab;
+        if (activeTab) {
+            setActive(activeTab);
+        }
+    }
 
-        if (!timePatterns || Object.keys(timePatterns).length === 0) {
-            console.warn('[incidentTimelineChart] time_patterns is empty');
+    function initCharts(productAnalytics = null) {
+        if (typeof Chart === 'undefined') {
             return;
         }
+        const incidentCanvas = document.getElementById('incidentTimelineChart');
+        const lifespanCanvas = document.getElementById('lifespanDistributionChart');
+        const costCanvas = document.getElementById('costTrendChart');
+        const radarCanvas = document.getElementById('radarComparisonChart');
 
-        const periods = ['0-3ヶ月', '3-6ヶ月', '6-12ヶ月', '1-2年', '2-3年', '3年以上'];
-        const values = periods.map((period) => timePatterns[period] ?? 0);
-        console.log('[incidentTimelineChart] values', values);
+        if (!incidentCanvas) return;
 
-        new Chart(chartElement.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: periods,
-                datasets: [{
-                    label: 'インシデント件数',
-                    data: values,
-                    backgroundColor: [
-                        'rgba(99, 102, 241, 0.8)',
-                        'rgba(99, 102, 241, 0.75)',
-                        'rgba(99, 102, 241, 0.7)',
-                        'rgba(99, 102, 241, 0.65)',
-                        'rgba(99, 102, 241, 0.6)',
-                        'rgba(99, 102, 241, 0.55)',
-                    ],
-                    borderRadius: 8,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        const timePatterns = productAnalytics?.time_patterns ?? parseChartData(incidentCanvas.dataset.timePatterns);
+        const lifespanDistribution = productAnalytics?.lifespan_distribution ?? parseChartData(lifespanCanvas?.dataset.lifespanDistribution);
+        const costTrend = productAnalytics?.cost_trend ?? parseChartData(costCanvas?.dataset.costTrend);
+        const radarData = productAnalytics?.radar_comparison ?? parseChartData(radarCanvas?.dataset.radar);
+
+        const incidentPeriods = ['0-3ヶ月', '3-6ヶ月', '6-12ヶ月', '1-2年', '2-3年', '3年以上'];
+        const lifespanPeriods = ['0-1年', '1-2年', '2-3年', '3-4年', '4年以上'];
+
+        if (timePatterns && Object.keys(timePatterns).length > 0) {
+            destroyChart(incidentCanvas);
+            const incidentValues = incidentPeriods.map((period) => timePatterns[period] ?? 0);
+            new Chart(incidentCanvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: incidentPeriods,
+                    datasets: [{
+                        label: 'インシデント件数',
+                        data: incidentValues,
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                        tension: 0.35,
+                        fill: true,
+                        borderWidth: 3
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        },
-                        ticks: {
-                            precision: 0,
-                            color: 'rgba(0, 0, 0, 0.5)'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                precision: 0,
+                                color: 'rgba(0, 0, 0, 0.5)'
+                            }
                         },
-                        ticks: {
-                            color: 'rgba(0, 0, 0, 0.5)'
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(0, 0, 0, 0.5)'
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
+
+        if (lifespanCanvas && lifespanDistribution && Object.keys(lifespanDistribution).length > 0) {
+            destroyChart(lifespanCanvas);
+            const lifespanValues = lifespanPeriods.map((period) => lifespanDistribution[period] ?? 0);
+            new Chart(lifespanCanvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: lifespanPeriods,
+                    datasets: [{
+                        label: '製品数',
+                        data: lifespanValues,
+                        backgroundColor: 'rgba(14, 116, 144, 0.3)',
+                        borderColor: 'rgba(14, 116, 144, 0.9)',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                precision: 0,
+                                color: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (costCanvas && costTrend && Object.keys(costTrend).length > 0) {
+            destroyChart(costCanvas);
+            const costValues = incidentPeriods.map((period) => costTrend[period] ?? 0);
+            new Chart(costCanvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: incidentPeriods,
+                    datasets: [{
+                        label: 'メンテナンス費用',
+                        data: costValues,
+                        borderColor: 'rgba(234, 88, 12, 1)',
+                        backgroundColor: 'rgba(234, 88, 12, 0.12)',
+                        tension: 0.35,
+                        fill: true,
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: (value) => `¥${value}`,
+                                color: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (radarCanvas && radarData && radarData.labels && radarData.product) {
+            destroyChart(radarCanvas);
+            new Chart(radarCanvas.getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: radarData.labels,
+                    datasets: [
+                        {
+                            label: '選択製品',
+                            data: radarData.product,
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: '全体平均',
+                            data: radarData.baseline ?? [],
+                            borderColor: 'rgba(148, 163, 184, 0.8)',
+                            backgroundColor: 'rgba(148, 163, 184, 0.15)',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(0, 0, 0, 0.6)'
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.08)'
+                            },
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.08)'
+                            },
+                            pointLabels: {
+                                color: 'rgba(0, 0, 0, 0.6)'
+                            },
+                            ticks: {
+                                color: 'rgba(0, 0, 0, 0.45)',
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        initTabs();
     }
 </script>
 @endpush
