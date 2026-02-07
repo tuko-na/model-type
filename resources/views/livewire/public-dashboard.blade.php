@@ -300,173 +300,6 @@
                         </div>
                     </div>
 
-                    {{-- タブ付きチャート --}}
-                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50" wire:ignore>
-                        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                            <h3 class="text-lg font-bold text-gray-900">詳細チャート</h3>
-                            <div class="inline-flex p-1 bg-gray-100 rounded-2xl" data-chart-tabs>
-                                <button type="button" class="px-4 py-2 text-sm font-semibold text-indigo-600 transition rounded-xl bg-indigo-50 js-chart-tab" data-tab="incident">
-                                    インシデント分析
-                                </button>
-                                <button type="button" class="px-4 py-2 text-sm font-semibold text-gray-500 transition rounded-xl hover:text-gray-700 js-chart-tab" data-tab="lifespan">
-                                    寿命分布
-                                </button>
-                                <button type="button" class="px-4 py-2 text-sm font-semibold text-gray-500 transition rounded-xl hover:text-gray-700 js-chart-tab" data-tab="cost">
-                                    コスト推移
-                                </button>
-                            </div>
-                        </div>
-
-                        <div data-chart-panel="incident">
-                            <h4 class="mb-4 text-sm font-semibold text-gray-700">購入後の月数別インシデント件数</h4>
-                            <div class="h-64">
-                                <canvas id="incidentTimelineChart" data-time-patterns='@json($analytics['time_patterns'])'></canvas>
-                            </div>
-                        </div>
-
-                        <div class="hidden" data-chart-panel="lifespan">
-                            <h4 class="mb-4 text-sm font-semibold text-gray-700">購入からの経過年数分布</h4>
-                            <div class="h-64">
-                                <canvas id="lifespanDistributionChart" data-lifespan-distribution='@json($analytics['lifespan_distribution'])'></canvas>
-                            </div>
-                        </div>
-
-                        <div class="hidden" data-chart-panel="cost">
-                            <h4 class="mb-4 text-sm font-semibold text-gray-700">購入後のメンテナンス費用推移</h4>
-                            <div class="h-64">
-                                <canvas id="costTrendChart" data-cost-trend='@json($analytics['cost_trend'])'></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- よくあるインシデント --}}
-                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50">
-                        <h3 class="mb-6 text-lg font-bold text-gray-900">よくあるインシデント（深刻度順）</h3>
-                        @if(!empty($analytics['top_problems']))
-                            <div class="space-y-4">
-                                @foreach($analytics['top_problems'] as $index => $problem)
-                                    @php
-                                        $severityClass = match(true) {
-                                            $problem['avg_cost'] > 10000 => 'border-red-400 bg-red-50/50',
-                                            $problem['avg_cost'] > 5000 => 'border-amber-400 bg-amber-50/50',
-                                            default => 'border-emerald-400 bg-emerald-50/50'
-                                        };
-                                    @endphp
-                                    <div class="flex items-center gap-4 p-4 rounded-2xl border-l-4 {{ $severityClass }}">
-                                        <div class="min-w-[72px] text-xs text-gray-400">{{ $problem['count'] }}件</div>
-                                        <div class="flex-1">
-                                            <div class="font-semibold text-gray-900">{{ $problem['label'] }}</div>
-                                            <div class="text-sm text-gray-500">報告件数ベースの代表的インシデント</div>
-                                        </div>
-                                        @if($problem['avg_cost'] > 0)
-                                            <div class="text-right">
-                                                <div class="text-sm font-semibold text-gray-900">¥{{ number_format($problem['avg_cost']) }}</div>
-                                                <div class="text-xs text-gray-400">平均費用</div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="py-12 text-center text-gray-400">
-                                <svg class="w-16 h-16 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <p>問題報告なし - この製品は良好な状態です！</p>
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- 比較レーダーチャート --}}
-                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50" wire:ignore>
-                        <h3 class="mb-6 text-lg font-bold text-gray-900">全体平均との差</h3>
-                        <div class="h-72">
-                            <canvas id="radarComparisonChart" data-radar='@json($analytics['radar_comparison'])'></canvas>
-                        </div>
-                    </div>
-
-                    {{-- インシデント種別 & 深刻度 --}}
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        {{-- インシデント種別分布 --}}
-                        <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50">
-                            <h4 class="mb-4 text-lg font-bold text-gray-900">インシデント種別</h4>
-                            @if(!empty($analytics['incident_type_distribution']))
-                                <div class="space-y-4">
-                                    @php
-                                        $total = array_sum($analytics['incident_type_distribution']);
-                                        $typeColors = [
-                                            'failure' => 'bg-red-500',
-                                            'maintenance' => 'bg-amber-500',
-                                            'damage' => 'bg-blue-500',
-                                            'loss' => 'bg-gray-500'
-                                        ];
-                                    @endphp
-                                    @foreach($analytics['incident_type_distribution'] as $type => $count)
-                                        @php $percentage = $total > 0 ? round(($count / $total) * 100) : 0; @endphp
-                                        <div>
-                                            <div class="flex justify-between mb-2 text-sm">
-                                                <span class="font-medium text-gray-700">{{ \App\Models\Incident::INCIDENT_TYPES[$type] ?? $type }}</span>
-                                                <span class="text-gray-500">{{ $count }}件 ({{ $percentage }}%)</span>
-                                            </div>
-                                            <div class="h-2 overflow-hidden bg-gray-100 rounded-full">
-                                                <div class="h-full {{ $typeColors[$type] ?? 'bg-gray-500' }} rounded-full transition-all duration-500" style="width: {{ $percentage }}%"></div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="py-8 text-center text-gray-400">
-                                    <p>データなし</p>
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- 深刻度分布 --}}
-                        <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50">
-                            <h4 class="mb-4 text-lg font-bold text-gray-900">深刻度分布</h4>
-                            @if(!empty($analytics['severity_distribution']))
-                                <div class="grid grid-cols-4 gap-3">
-                                    @php
-                                        $total = array_sum($analytics['severity_distribution']);
-                                        $severityConfig = [
-                                            'low' => ['color' => 'emerald', 'label' => '軽微'],
-                                            'medium' => ['color' => 'amber', 'label' => '中程度'],
-                                            'high' => ['color' => 'orange', 'label' => '高'],
-                                            'critical' => ['color' => 'red', 'label' => '重大'],
-                                        ];
-                                    @endphp
-                                    @foreach(['low', 'medium', 'high', 'critical'] as $severity)
-                                        @php 
-                                            $count = $analytics['severity_distribution'][$severity] ?? 0;
-                                            $percentage = $total > 0 ? round(($count / $total) * 100) : 0;
-                                            $config = $severityConfig[$severity];
-                                        @endphp
-                                        <div class="text-center">
-                                            <div class="relative w-16 h-16 mx-auto mb-2">
-                                                <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                                                    <circle cx="18" cy="18" r="14" fill="none" stroke="#E5E7EB" stroke-width="3"></circle>
-                                                    <circle 
-                                                        cx="18" cy="18" r="14" fill="none" 
-                                                        class="stroke-{{ $config['color'] }}-500"
-                                                        stroke-width="3"
-                                                        stroke-linecap="round"
-                                                        stroke-dasharray="{{ $percentage * 0.88 }} 88"
-                                                    ></circle>
-                                                </svg>
-                                                <span class="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-900">{{ $count }}</span>
-                                            </div>
-                                            <p class="text-xs font-medium text-{{ $config['color'] }}-600">{{ $config['label'] }}</p>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="py-8 text-center text-gray-400">
-                                    <p>データなし</p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
                     {{-- ライフサイクルコスト予測 --}}
                     <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50">
                         <h3 class="mb-6 text-lg font-bold text-gray-900">
@@ -492,6 +325,173 @@
                                 <p class="mb-1 text-sm text-white/80">総コスト</p>
                                 <p class="text-xl font-bold text-white">¥{{ number_format($analytics['lifecycle_cost']) }}</p>
                             </div>
+                        </div>
+                    </div>
+
+                    {{-- インシデント集約ブロック --}}
+                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50" wire:ignore>
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                            <h3 class="text-lg font-bold text-gray-900">インシデント分析</h3>
+                            <div class="inline-flex p-1 bg-gray-100 rounded-2xl" data-incident-tabs>
+                                <button type="button" class="px-4 py-2 text-sm font-semibold text-indigo-600 transition rounded-xl bg-indigo-50 js-incident-tab" data-tab="incident-pattern">
+                                    発生パターン
+                                </button>
+                                <button type="button" class="px-4 py-2 text-sm font-semibold text-gray-500 transition rounded-xl hover:text-gray-700 js-incident-tab" data-tab="top-incident">
+                                    主要インシデント
+                                </button>
+                                <button type="button" class="px-4 py-2 text-sm font-semibold text-gray-500 transition rounded-xl hover:text-gray-700 js-incident-tab" data-tab="incident-distribution">
+                                    種別・深刻度
+                                </button>
+                            </div>
+                        </div>
+
+                        <div data-incident-panel="incident-pattern">
+                            <h4 class="mb-4 text-sm font-semibold text-gray-700">購入後の月数別インシデント件数</h4>
+                            <div class="h-64">
+                                <canvas id="incidentTimelineChart" data-time-patterns='@json($analytics['time_patterns'])'></canvas>
+                            </div>
+                            <div class="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2">
+                                <div>
+                                    <h4 class="mb-3 text-sm font-semibold text-gray-700">購入からの経過年数分布</h4>
+                                    <div class="h-48">
+                                        <canvas id="lifespanDistributionChart" data-lifespan-distribution='@json($analytics['lifespan_distribution'])'></canvas>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="mb-3 text-sm font-semibold text-gray-700">購入後のメンテナンス費用推移</h4>
+                                    <div class="h-48">
+                                        <canvas id="costTrendChart" data-cost-trend='@json($analytics['cost_trend'])'></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hidden" data-incident-panel="top-incident">
+                            <h4 class="mb-4 text-sm font-semibold text-gray-700">よくあるインシデント（深刻度順）</h4>
+                            @if(!empty($analytics['top_problems']))
+                                <div class="space-y-4">
+                                    @foreach($analytics['top_problems'] as $index => $problem)
+                                        @php
+                                            $severityClass = match(true) {
+                                                $problem['avg_cost'] > 10000 => 'border-red-400 bg-red-50/50',
+                                                $problem['avg_cost'] > 5000 => 'border-amber-400 bg-amber-50/50',
+                                                default => 'border-emerald-400 bg-emerald-50/50'
+                                            };
+                                        @endphp
+                                        <div class="flex items-center gap-4 p-4 rounded-2xl border-l-4 {{ $severityClass }}">
+                                            <div class="min-w-[72px] text-xs text-gray-400">{{ $problem['count'] }}件</div>
+                                            <div class="flex-1">
+                                                <div class="font-semibold text-gray-900">{{ $problem['label'] }}</div>
+                                                <div class="text-sm text-gray-500">報告件数ベースの代表的インシデント</div>
+                                            </div>
+                                            @if($problem['avg_cost'] > 0)
+                                                <div class="text-right">
+                                                    <div class="text-sm font-semibold text-gray-900">¥{{ number_format($problem['avg_cost']) }}</div>
+                                                    <div class="text-xs text-gray-400">平均費用</div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="py-12 text-center text-gray-400">
+                                    <svg class="w-16 h-16 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <p>問題報告なし - この製品は良好な状態です！</p>
+                                </div>
+                            @endif
+                        </div>
+
+                        <div class="hidden" data-incident-panel="incident-distribution">
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                {{-- インシデント種別分布 --}}
+                                <div>
+                                    <h4 class="mb-4 text-sm font-semibold text-gray-700">インシデント種別</h4>
+                                    @if(!empty($analytics['incident_type_distribution']))
+                                        <div class="space-y-4">
+                                            @php
+                                                $total = array_sum($analytics['incident_type_distribution']);
+                                                $typeColors = [
+                                                    'failure' => 'bg-red-500',
+                                                    'maintenance' => 'bg-amber-500',
+                                                    'damage' => 'bg-blue-500',
+                                                    'loss' => 'bg-gray-500'
+                                                ];
+                                            @endphp
+                                            @foreach($analytics['incident_type_distribution'] as $type => $count)
+                                                @php $percentage = $total > 0 ? round(($count / $total) * 100) : 0; @endphp
+                                                <div>
+                                                    <div class="flex justify-between mb-2 text-sm">
+                                                        <span class="font-medium text-gray-700">{{ \App\Models\Incident::INCIDENT_TYPES[$type] ?? $type }}</span>
+                                                        <span class="text-gray-500">{{ $count }}件 ({{ $percentage }}%)</span>
+                                                    </div>
+                                                    <div class="h-2 overflow-hidden bg-gray-100 rounded-full">
+                                                        <div class="h-full {{ $typeColors[$type] ?? 'bg-gray-500' }} rounded-full transition-all duration-500" style="width: {{ $percentage }}%"></div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="py-8 text-center text-gray-400">
+                                            <p>データなし</p>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                {{-- 深刻度分布 --}}
+                                <div>
+                                    <h4 class="mb-4 text-sm font-semibold text-gray-700">深刻度分布</h4>
+                                    @if(!empty($analytics['severity_distribution']))
+                                        <div class="grid grid-cols-4 gap-3">
+                                            @php
+                                                $total = array_sum($analytics['severity_distribution']);
+                                                $severityConfig = [
+                                                    'low' => ['color' => 'emerald', 'label' => '軽微'],
+                                                    'medium' => ['color' => 'amber', 'label' => '中程度'],
+                                                    'high' => ['color' => 'orange', 'label' => '高'],
+                                                    'critical' => ['color' => 'red', 'label' => '重大'],
+                                                ];
+                                            @endphp
+                                            @foreach(['low', 'medium', 'high', 'critical'] as $severity)
+                                                @php 
+                                                    $count = $analytics['severity_distribution'][$severity] ?? 0;
+                                                    $percentage = $total > 0 ? round(($count / $total) * 100) : 0;
+                                                    $config = $severityConfig[$severity];
+                                                @endphp
+                                                <div class="text-center">
+                                                    <div class="relative w-16 h-16 mx-auto mb-2">
+                                                        <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                                            <circle cx="18" cy="18" r="14" fill="none" stroke="#E5E7EB" stroke-width="3"></circle>
+                                                            <circle 
+                                                                cx="18" cy="18" r="14" fill="none" 
+                                                                class="stroke-{{ $config['color'] }}-500"
+                                                                stroke-width="3"
+                                                                stroke-linecap="round"
+                                                                stroke-dasharray="{{ $percentage * 0.88 }} 88"
+                                                            ></circle>
+                                                        </svg>
+                                                        <span class="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-900">{{ $count }}</span>
+                                                    </div>
+                                                    <p class="text-xs font-medium text-{{ $config['color'] }}-600">{{ $config['label'] }}</p>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="py-8 text-center text-gray-400">
+                                            <p>データなし</p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- 比較レーダーチャート --}}
+                    <div class="p-6 bg-white shadow-xl rounded-3xl shadow-gray-200/50" wire:ignore>
+                        <h3 class="mb-6 text-lg font-bold text-gray-900">全体平均との差</h3>
+                        <div class="h-72">
+                            <canvas id="radarComparisonChart" data-radar='@json($analytics['radar_comparison'])'></canvas>
                         </div>
                     </div>
                 </div>
@@ -589,6 +589,40 @@
             });
             panels.forEach((panel) => {
                 panel.classList.toggle('hidden', panel.dataset.chartPanel !== tabName);
+            });
+        };
+
+        if (!tabRoot.dataset.initialized) {
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', () => setActive(tab.dataset.tab));
+            });
+            tabRoot.dataset.initialized = 'true';
+        }
+
+        const activeTab = tabRoot.dataset.activeTab || tabs[0]?.dataset.tab;
+        if (activeTab) {
+            setActive(activeTab);
+        }
+    }
+
+    function initIncidentTabs() {
+        const tabRoot = document.querySelector('[data-incident-tabs]');
+        if (!tabRoot) return;
+
+        const tabs = Array.from(tabRoot.querySelectorAll('.js-incident-tab'));
+        const panels = Array.from(document.querySelectorAll('[data-incident-panel]'));
+        if (tabs.length === 0 || panels.length === 0) return;
+
+        const setActive = (tabName) => {
+            tabRoot.dataset.activeTab = tabName;
+            tabs.forEach((tab) => {
+                const isActive = tab.dataset.tab === tabName;
+                tab.classList.toggle('bg-indigo-50', isActive);
+                tab.classList.toggle('text-indigo-600', isActive);
+                tab.classList.toggle('text-gray-500', !isActive);
+            });
+            panels.forEach((panel) => {
+                panel.classList.toggle('hidden', panel.dataset.incidentPanel !== tabName);
             });
         };
 
@@ -827,6 +861,7 @@
         }
 
         initTabs();
+        initIncidentTabs();
     }
 </script>
 @endpush
