@@ -7,7 +7,7 @@
             <a href="{{ route('dashboard') }}" class="px-4 py-2 text-sm font-medium text-gray-500 transition-all rounded-md hover:text-gray-900">
                 マイダッシュボード
             </a>
-            <a href="{{ route('public.dashboard') }}" class="px-4 py-2 text-sm font-medium text-white transition-all rounded-md shadow bg-emerald-600">
+            <a href="{{ route('public.dashboard') }}" class="px-4 py-2 text-sm font-medium text-white transition-all rounded-md shadow bg-indigo-600">
                 集合知
             </a>
         </div>
@@ -105,11 +105,11 @@
                     @endphp
                     <div class="relative overflow-hidden bg-white shadow-xl rounded-3xl shadow-gray-200/50">
                         {{-- 総合スコアヘッダー（グラデーション） --}}
-                        <div class="relative px-8 pt-8 pb-12 text-center bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700">
+                        <div class="relative px-8 pt-8 pb-12 text-center bg-gradient-to-br from-indigo-500 to-indigo-700">
                             {{-- アニメーション背景 --}}
                             <div class="absolute inset-0 opacity-30">
                                 <div class="absolute top-0 left-0 w-40 h-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 blur-3xl animate-pulse"></div>
-                                <div class="absolute bottom-0 right-0 w-32 h-32 translate-x-1/2 translate-y-1/2 rounded-full bg-purple-400/20 blur-3xl"></div>
+                                <div class="absolute bottom-0 right-0 w-32 h-32 translate-x-1/2 translate-y-1/2 rounded-full bg-indigo-400/20 blur-3xl"></div>
                             </div>
                             
                             {{-- 総合スコアリング --}}
@@ -133,22 +133,7 @@
                         </div>
 
                         {{-- 製品情報 --}}
-                        <div class="px-8 pt-6 pb-8 -mt-4 text-center bg-white rounded-t-3xl">
-                            {{-- 製品アイコン --}}
-                            <div class="relative z-10 flex items-center justify-center w-16 h-16 mx-auto mb-4 -mt-12 shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-indigo-200 ring-4 ring-white">
-                                @php
-                                    $categoryIcons = [
-                                        'Smartphone' => '📱',
-                                        'Laptop' => '💻',
-                                        'Tablet' => '📱',
-                                        'TV' => '📺',
-                                        'Appliance' => '🏠',
-                                        'Other' => '📦',
-                                    ];
-                                @endphp
-                                <span class="text-2xl">{{ $categoryIcons[$analytics['product']['category']] ?? '📦' }}</span>
-                            </div>
-
+                        <div class="px-8 pt-6 pb-8 text-center bg-white rounded-t-3xl">
                             <h2 class="mb-1 text-xl font-bold text-gray-900">{{ $analytics['product']['model_number'] }}</h2>
                             <p class="mb-1 text-sm text-gray-500">{{ $analytics['product']['manufacturer'] }} {{ $analytics['product']['name'] }}</p>
                             <p class="text-xs font-medium text-indigo-600">{{ $analytics['sample_count'] }}人のユーザーデータに基づく</p>
@@ -463,7 +448,7 @@
                                 <p class="mb-1 text-sm text-gray-500">予想寿命</p>
                                 <p class="text-xl font-bold text-gray-900">{{ $analytics['category_life_years'] }}年</p>
                             </div>
-                            <div class="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl">
+                            <div class="p-4 bg-indigo-600 rounded-2xl">
                                 <p class="mb-1 text-sm text-white/80">総コスト</p>
                                 <p class="text-xl font-bold text-white">¥{{ number_format($analytics['lifecycle_cost']) }}</p>
                             </div>
