@@ -18,6 +18,7 @@ class PublicDashboard extends Component
     public ?int $selectedProductId = null;
     public ?string $selectedCategory = null;
     public array $compareProducts = [];
+    public bool $suppressSuggestions = false;
 
     // Category Average Lifespan (in years)
     protected array $categoryLifespans = [
@@ -52,6 +53,11 @@ class PublicDashboard extends Component
     public function selectProduct($id)
     {
         $this->selectedProductId = (int) $id;
+        $product = Product::select('id', 'name')->find($this->selectedProductId);
+        if ($product) {
+            $this->search = $product->name;
+        }
+        $this->suppressSuggestions = true;
         $this->dispatch('product-selected', data: $this->productAnalytics);
     }
 
@@ -59,6 +65,13 @@ class PublicDashboard extends Component
     {
         $this->selectedProductId = null;
         $this->search = '';
+        $this->suppressSuggestions = false;
+    }
+
+    public function updatedSearch()
+    {
+        $this->selectedProductId = null;
+        $this->suppressSuggestions = false;
     }
 
     public function setCategory(?string $category)
@@ -92,7 +105,7 @@ class PublicDashboard extends Component
     #[Computed]
     public function searchResults()
     {
-        if (strlen($this->search) < 2) {
+        if (strlen($this->search) < 1) {
             return collect();
         }
 

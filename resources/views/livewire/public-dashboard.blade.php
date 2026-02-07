@@ -57,7 +57,7 @@
             </div>
 
             {{-- 検索結果ドロップダウン --}}
-            @if($this->searchResults->count() > 0)
+            @if(!$this->suppressSuggestions && $this->searchResults->count() > 0)
                 <div class="mt-3 overflow-y-auto bg-white border border-gray-100 divide-y divide-gray-100 shadow-xl rounded-2xl max-h-80">
                     @foreach($this->searchResults as $result)
                         <div class="flex items-center justify-between p-4 transition-all duration-200 cursor-pointer hover:bg-indigo-50/50" wire:click="selectProduct({{ $result['product_ids'][0] }})">
@@ -80,7 +80,7 @@
                         </div>
                     @endforeach
                 </div>
-            @elseif(strlen($search) >= 2)
+            @elseif(!$this->suppressSuggestions && strlen($search) >= 1)
                 <div class="py-12 mt-3 text-center bg-white shadow-lg rounded-2xl">
                     <svg class="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
