@@ -346,22 +346,39 @@
                         </div>
 
                         <div data-incident-panel="incident-pattern">
-                            <h4 class="mb-4 text-sm font-semibold text-gray-700">購入後の月数別インシデント件数</h4>
-                            <div class="h-64">
-                                <canvas id="incidentTimelineChart" data-time-patterns='@json($analytics['time_patterns'])'></canvas>
-                            </div>
-                            <div class="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2">
-                                <div>
-                                    <h4 class="mb-3 text-sm font-semibold text-gray-700">購入からの経過年数分布</h4>
-                                    <div class="h-48">
-                                        <canvas id="lifespanDistributionChart" data-lifespan-distribution='@json($analytics['lifespan_distribution'])'></canvas>
-                                    </div>
+                            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                <h4 class="text-sm font-semibold text-gray-700">時系列チャート</h4>
+                                <div class="inline-flex p-1 bg-gray-100 rounded-2xl" data-incident-chart-tabs>
+                                    <button type="button" class="px-3 py-1.5 text-xs font-semibold text-indigo-600 transition rounded-xl bg-indigo-50 js-incident-chart-tab" data-tab="chart-incident">
+                                        インシデント
+                                    </button>
+                                    <button type="button" class="px-3 py-1.5 text-xs font-semibold text-gray-500 transition rounded-xl hover:text-gray-700 js-incident-chart-tab" data-tab="chart-lifespan">
+                                        寿命分布
+                                    </button>
+                                    <button type="button" class="px-3 py-1.5 text-xs font-semibold text-gray-500 transition rounded-xl hover:text-gray-700 js-incident-chart-tab" data-tab="chart-cost">
+                                        コスト推移
+                                    </button>
                                 </div>
-                                <div>
-                                    <h4 class="mb-3 text-sm font-semibold text-gray-700">購入後のメンテナンス費用推移</h4>
-                                    <div class="h-48">
-                                        <canvas id="costTrendChart" data-cost-trend='@json($analytics['cost_trend'])'></canvas>
-                                    </div>
+                            </div>
+
+                            <div data-incident-chart-panel="chart-incident">
+                                <h4 class="mb-3 text-sm font-semibold text-gray-700">購入後の月数別インシデント件数</h4>
+                                <div class="h-64">
+                                    <canvas id="incidentTimelineChart" data-time-patterns='@json($analytics['time_patterns'])'></canvas>
+                                </div>
+                            </div>
+
+                            <div class="hidden" data-incident-chart-panel="chart-lifespan">
+                                <h4 class="mb-3 text-sm font-semibold text-gray-700">購入からの経過年数分布</h4>
+                                <div class="h-64">
+                                    <canvas id="lifespanDistributionChart" data-lifespan-distribution='@json($analytics['lifespan_distribution'])'></canvas>
+                                </div>
+                            </div>
+
+                            <div class="hidden" data-incident-chart-panel="chart-cost">
+                                <h4 class="mb-3 text-sm font-semibold text-gray-700">購入後のメンテナンス費用推移</h4>
+                                <div class="h-64">
+                                    <canvas id="costTrendChart" data-cost-trend='@json($analytics['cost_trend'])'></canvas>
                                 </div>
                             </div>
                         </div>
@@ -639,6 +656,40 @@
         }
     }
 
+    function initIncidentChartTabs() {
+        const tabRoot = document.querySelector('[data-incident-chart-tabs]');
+        if (!tabRoot) return;
+
+        const tabs = Array.from(tabRoot.querySelectorAll('.js-incident-chart-tab'));
+        const panels = Array.from(document.querySelectorAll('[data-incident-chart-panel]'));
+        if (tabs.length === 0 || panels.length === 0) return;
+
+        const setActive = (tabName) => {
+            tabRoot.dataset.activeTab = tabName;
+            tabs.forEach((tab) => {
+                const isActive = tab.dataset.tab === tabName;
+                tab.classList.toggle('bg-indigo-50', isActive);
+                tab.classList.toggle('text-indigo-600', isActive);
+                tab.classList.toggle('text-gray-500', !isActive);
+            });
+            panels.forEach((panel) => {
+                panel.classList.toggle('hidden', panel.dataset.incidentChartPanel !== tabName);
+            });
+        };
+
+        if (!tabRoot.dataset.initialized) {
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', () => setActive(tab.dataset.tab));
+            });
+            tabRoot.dataset.initialized = 'true';
+        }
+
+        const activeTab = tabRoot.dataset.activeTab || tabs[0]?.dataset.tab;
+        if (activeTab) {
+            setActive(activeTab);
+        }
+    }
+
     function initCharts(productAnalytics = null) {
         if (typeof Chart === 'undefined') {
             return;
@@ -862,6 +913,7 @@
 
         initTabs();
         initIncidentTabs();
+        initIncidentChartTabs();
     }
 </script>
 @endpush
