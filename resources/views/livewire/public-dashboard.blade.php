@@ -97,35 +97,67 @@
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
                 {{-- 左カラム - 製品情報 --}}
                 <div class="space-y-6 lg:col-span-4">
-                    {{-- 製品カード --}}
-                    <div class="relative p-8 overflow-hidden text-center bg-white shadow-xl rounded-3xl shadow-gray-200/50">
-                        {{-- 装飾グラデーション --}}
-                        <div class="absolute top-0 right-0 w-32 h-32 rounded-bl-full bg-gradient-to-bl from-indigo-100 to-transparent"></div>
-                        
-                        {{-- 製品アイコン --}}
-                        <div class="relative z-10 flex items-center justify-center w-32 h-32 mx-auto mb-6 shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl shadow-indigo-200">
-                            @php
-                                $categoryIcons = [
-                                    'Smartphone' => '📱',
-                                    'Laptop' => '💻',
-                                    'Tablet' => '📱',
-                                    'TV' => '📺',
-                                    'Appliance' => '🏠',
-                                    'Other' => '📦',
-                                ];
-                            @endphp
-                            <span class="text-5xl">{{ $categoryIcons[$analytics['product']['category']] ?? '📦' }}</span>
+                    {{-- 製品カード + 総合スコア統合 --}}
+                    @php
+                        $cpdScore = max(0, min(100, 100 - ($analytics['avg_cpd'] / 2)));
+                        $lifespanScore = min(100, ($analytics['avg_lifespan_years'] / $analytics['category_life_years']) * 100);
+                        $overallScore = round(($analytics['reliability_score'] * 0.4) + ($cpdScore * 0.3) + ($lifespanScore * 0.3));
+                    @endphp
+                    <div class="relative overflow-hidden bg-white shadow-xl rounded-3xl shadow-gray-200/50">
+                        {{-- 総合スコアヘッダー（グラデーション） --}}
+                        <div class="relative px-8 pt-8 pb-12 text-center bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700">
+                            {{-- アニメーション背景 --}}
+                            <div class="absolute inset-0 opacity-30">
+                                <div class="absolute top-0 left-0 w-40 h-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 blur-3xl animate-pulse"></div>
+                                <div class="absolute bottom-0 right-0 w-32 h-32 translate-x-1/2 translate-y-1/2 rounded-full bg-purple-400/20 blur-3xl"></div>
+                            </div>
+                            
+                            {{-- 総合スコアリング --}}
+                            <div class="relative z-10">
+                                <div class="relative w-32 h-32 mx-auto mb-4">
+                                    <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                        <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3"></circle>
+                                        <circle 
+                                            cx="18" cy="18" r="15" fill="none" 
+                                            stroke="white"
+                                            stroke-width="3"
+                                            stroke-linecap="round"
+                                            stroke-dasharray="{{ $overallScore * 0.94 }} 94"
+                                            style="transition: stroke-dasharray 1s ease-out;"
+                                        ></circle>
+                                    </svg>
+                                    <span class="absolute inset-0 flex items-center justify-center text-4xl font-bold text-white">{{ $overallScore }}</span>
+                                </div>
+                                <div class="text-lg font-medium text-white/90">総合スコア</div>
+                            </div>
                         </div>
 
-                        <h2 class="mb-1 text-2xl font-bold text-gray-900">{{ $analytics['product']['model_number'] }}</h2>
-                        <p class="mb-1 text-gray-500">{{ $analytics['product']['manufacturer'] }} {{ $analytics['product']['name'] }}</p>
-                        <p class="text-sm font-medium text-indigo-600">{{ $analytics['sample_count'] }}人のユーザーデータに基づく</p>
+                        {{-- 製品情報 --}}
+                        <div class="px-8 pt-6 pb-8 -mt-4 text-center bg-white rounded-t-3xl">
+                            {{-- 製品アイコン --}}
+                            <div class="relative z-10 flex items-center justify-center w-16 h-16 mx-auto mb-4 -mt-12 shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-indigo-200 ring-4 ring-white">
+                                @php
+                                    $categoryIcons = [
+                                        'Smartphone' => '📱',
+                                        'Laptop' => '💻',
+                                        'Tablet' => '📱',
+                                        'TV' => '📺',
+                                        'Appliance' => '🏠',
+                                        'Other' => '📦',
+                                    ];
+                                @endphp
+                                <span class="text-2xl">{{ $categoryIcons[$analytics['product']['category']] ?? '📦' }}</span>
+                            </div>
 
-                        {{-- Oura風リングスコア --}}
-                        <div class="grid grid-cols-3 gap-4 mt-8">
+                            <h2 class="mb-1 text-xl font-bold text-gray-900">{{ $analytics['product']['model_number'] }}</h2>
+                            <p class="mb-1 text-sm text-gray-500">{{ $analytics['product']['manufacturer'] }} {{ $analytics['product']['name'] }}</p>
+                            <p class="text-xs font-medium text-indigo-600">{{ $analytics['sample_count'] }}人のユーザーデータに基づく</p>
+
+                            {{-- Oura風リングスコア --}}
+                            <div class="grid grid-cols-3 gap-3 mt-6">
                             {{-- 信頼性リング --}}
                             <div class="text-center">
-                                <div class="relative w-20 h-20 mx-auto mb-3">
+                                <div class="relative w-16 h-16 mx-auto mb-2">
                                     <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
                                         <circle cx="18" cy="18" r="14" fill="none" stroke="#E5E7EB" stroke-width="3"></circle>
                                         <circle 
@@ -137,18 +169,14 @@
                                             style="transition: stroke-dasharray 1s ease-out;"
                                         ></circle>
                                     </svg>
-                                    <span class="absolute inset-0 flex items-center justify-center text-xl font-bold text-gray-900">{{ $analytics['reliability_score'] }}</span>
+                                    <span class="absolute inset-0 flex items-center justify-center text-base font-bold text-gray-900">{{ $analytics['reliability_score'] }}</span>
                                 </div>
                                 <p class="text-xs font-medium text-gray-600">信頼性</p>
-                                <p class="text-xs text-gray-400">スコア/100</p>
                             </div>
 
                             {{-- コスパリング --}}
-                            @php
-                                $cpdScore = max(0, min(100, 100 - ($analytics['avg_cpd'] / 2)));
-                            @endphp
                             <div class="text-center">
-                                <div class="relative w-20 h-20 mx-auto mb-3">
+                                <div class="relative w-16 h-16 mx-auto mb-2">
                                     <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
                                         <circle cx="18" cy="18" r="14" fill="none" stroke="#E5E7EB" stroke-width="3"></circle>
                                         <circle 
@@ -160,18 +188,14 @@
                                             style="transition: stroke-dasharray 1s ease-out;"
                                         ></circle>
                                     </svg>
-                                    <span class="absolute inset-0 flex items-center justify-center text-lg font-bold text-gray-900">¥{{ $analytics['avg_cpd'] }}</span>
+                                    <span class="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-900">¥{{ $analytics['avg_cpd'] }}</span>
                                 </div>
                                 <p class="text-xs font-medium text-gray-600">コスパ</p>
-                                <p class="text-xs text-gray-400">日額</p>
                             </div>
 
                             {{-- 寿命リング --}}
-                            @php
-                                $lifespanScore = min(100, ($analytics['avg_lifespan_years'] / $analytics['category_life_years']) * 100);
-                            @endphp
                             <div class="text-center">
-                                <div class="relative w-20 h-20 mx-auto mb-3">
+                                <div class="relative w-16 h-16 mx-auto mb-2">
                                     <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
                                         <circle cx="18" cy="18" r="14" fill="none" stroke="#E5E7EB" stroke-width="3"></circle>
                                         <circle 
@@ -183,16 +207,16 @@
                                             style="transition: stroke-dasharray 1s ease-out;"
                                         ></circle>
                                     </svg>
-                                    <span class="absolute inset-0 flex items-center justify-center text-lg font-bold text-gray-900">{{ $analytics['avg_lifespan_years'] }}y</span>
+                                    <span class="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-900">{{ $analytics['avg_lifespan_years'] }}y</span>
                                 </div>
                                 <p class="text-xs font-medium text-gray-600">寿命</p>
-                                <p class="text-xs text-gray-400">平均{{ $analytics['category_life_years'] }}年</p>
                             </div>
-                        </div>
+                            </div>
 
-                        <button wire:click="clearSelection" class="w-full px-6 py-3 mt-8 text-sm font-medium text-gray-700 transition-all duration-200 bg-gray-100 hover:bg-gray-200 rounded-xl">
-                            ← 検索に戻る
-                        </button>
+                            <button wire:click="clearSelection" class="w-full px-6 py-3 mt-6 text-sm font-medium text-gray-700 transition-all duration-200 bg-gray-100 hover:bg-gray-200 rounded-xl">
+                                ← 検索に戻る
+                            </button>
+                        </div>
                     </div>
 
                     {{-- スペック表 --}}
@@ -225,26 +249,6 @@
 
                 {{-- 右カラム - データビジュアライゼーション --}}
                 <div class="space-y-6 lg:col-span-8">
-                    {{-- 総合スコアバナー --}}
-                    @php
-                        $overallScore = round(($analytics['reliability_score'] * 0.4) + ($cpdScore * 0.3) + ($lifespanScore * 0.3));
-                    @endphp
-                    <div class="relative p-8 overflow-hidden text-center shadow-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 rounded-3xl shadow-indigo-200/50">
-                        {{-- アニメーション背景 --}}
-                        <div class="absolute inset-0 opacity-30">
-                            <div class="absolute top-0 left-0 w-64 h-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 blur-3xl animate-pulse"></div>
-                            <div class="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 rounded-full w-96 h-96 bg-purple-400/20 blur-3xl"></div>
-                        </div>
-                        
-                        <div class="relative z-10">
-                            <div class="mb-2 font-bold text-white text-7xl">{{ $overallScore }}</div>
-                            <div class="text-xl font-medium text-white/90">総合スコア</div>
-                            <p class="max-w-md mx-auto mt-3 text-sm text-white/70">
-                                信頼性、コストパフォーマンス、製品寿命を総合的に評価したスコアです
-                            </p>
-                        </div>
-                    </div>
-
                     {{-- メトリクスグリッド --}}
                     <div class="grid grid-cols-2 gap-4">
                         {{-- 実質コスト --}}
