@@ -510,12 +510,24 @@
     document.addEventListener('DOMContentLoaded', initCharts);
     
     Livewire.on('product-selected', (event) => {
-        setTimeout(initCharts, 100);
+        setTimeout(() => initCharts(event?.data ?? null), 100);
     });
 
-    function initCharts() {
+    function initCharts(productAnalytics = null) {
         const chartElement = document.getElementById('incidentTimelineChart');
-        if (!chartElement) return;
+        if (!chartElement) {
+            console.warn('[incidentTimelineChart] canvas not found');
+            return;
+        }
+        const rect = chartElement.getBoundingClientRect();
+        console.log('[incidentTimelineChart] canvas rect', {
+            width: rect.width,
+            height: rect.height
+        });
+        if (typeof Chart === 'undefined') {
+            console.error('[incidentTimelineChart] Chart is undefined');
+            return;
+        }
         
         // 既存のチャートを破棄
         const existingChart = Chart.getChart(chartElement);
@@ -523,62 +535,75 @@
             existingChart.destroy();
         }
 
-        @if($this->productAnalytics && !empty($this->productAnalytics['time_patterns']))
-            @php
-                $periods = ['0-3ヶ月', '3-6ヶ月', '6-12ヶ月', '1-2年', '2-3年', '3年以上'];
-                $values = array_map(fn($p) => $this->productAnalytics['time_patterns'][$p] ?? 0, $periods);
-            @endphp
+        let timePatterns = productAnalytics?.time_patterns ?? null;
+        if (!timePatterns && chartElement.dataset.timePatterns) {
+            try {
+                timePatterns = JSON.parse(chartElement.dataset.timePatterns);
+            } catch (error) {
+                console.error('[incidentTimelineChart] invalid data-time-patterns', error);
+            }
+        }
 
-            new Chart(chartElement.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: @json($periods),
-                    datasets: [{
-                        label: 'インシデント件数',
-                        data: @json($values),
-                        backgroundColor: [
-                            'rgba(99, 102, 241, 0.8)',
-                            'rgba(99, 102, 241, 0.75)',
-                            'rgba(99, 102, 241, 0.7)',
-                            'rgba(99, 102, 241, 0.65)',
-                            'rgba(99, 102, 241, 0.6)',
-                            'rgba(99, 102, 241, 0.55)',
-                        ],
-                        borderRadius: 8,
-                        borderSkipped: false,
-                    }]
+        console.log('[incidentTimelineChart] time_patterns', timePatterns);
+
+        if (!timePatterns || Object.keys(timePatterns).length === 0) {
+            console.warn('[incidentTimelineChart] time_patterns is empty');
+            return;
+        }
+
+        const periods = ['0-3ヶ月', '3-6ヶ月', '6-12ヶ月', '1-2年', '2-3年', '3年以上'];
+        const values = periods.map((period) => timePatterns[period] ?? 0);
+        console.log('[incidentTimelineChart] values', values);
+
+        new Chart(chartElement.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: periods,
+                datasets: [{
+                    label: 'インシデント件数',
+                    data: values,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(99, 102, 241, 0.75)',
+                        'rgba(99, 102, 241, 0.7)',
+                        'rgba(99, 102, 241, 0.65)',
+                        'rgba(99, 102, 241, 0.6)',
+                        'rgba(99, 102, 241, 0.55)',
+                    ],
+                    borderRadius: 8,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            precision: 0,
+                            color: 'rgba(0, 0, 0, 0.5)'
                         }
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            },
-                            ticks: {
-                                precision: 0,
-                                color: 'rgba(0, 0, 0, 0.5)'
-                            }
+                    x: {
+                        grid: {
+                            display: false
                         },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                color: 'rgba(0, 0, 0, 0.5)'
-                            }
+                        ticks: {
+                            color: 'rgba(0, 0, 0, 0.5)'
                         }
                     }
                 }
-            });
-        @endif
+            }
+        });
     }
 </script>
 @endpush
