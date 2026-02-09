@@ -5,7 +5,7 @@
 </x-slot>
 
 <div class="py-12">
-    <div class="mx-auto max-w-4xl sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
 
         @if (session()->has('success'))
             <div class="p-4 mb-4 text-sm font-medium text-green-800 bg-green-100 rounded-lg">
@@ -24,13 +24,13 @@
         @if($step === 1)
             <div class="min-h-[60vh] flex flex-col items-center justify-center">
                 {{-- ヘッダー --}}
-                <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl shadow-lg mb-6">
+                <div class="mb-8 text-center">
+                    <div class="inline-flex items-center justify-center w-20 h-20 mb-6 shadow-lg bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
-                    <h2 class="text-3xl font-bold text-gray-800 mb-2">製品を検索</h2>
+                    <h2 class="mb-2 text-3xl font-bold text-gray-800">製品を検索</h2>
                     <p class="text-gray-500">型番や製品名を入力してください</p>
                 </div>
 
@@ -41,14 +41,14 @@
                             type="text"
                             wire:model.live.debounce.300ms="searchQuery"
                             placeholder="例: iPhone 15 Pro, WH-1000XM5, Surface Pro..."
-                            class="w-full px-6 py-5 text-xl border-2 border-gray-200 rounded-2xl focus:border-red-500 focus:ring-4 focus:ring-red-100 shadow-lg transition-all duration-200"
+                            class="w-full px-6 py-5 text-xl transition-all duration-200 border-2 border-gray-200 shadow-lg rounded-2xl focus:border-red-500 focus:ring-4 focus:ring-red-100"
                             autofocus
                         >
                         
                         {{-- ローディングスピナー --}}
                         @if($isSearching)
-                            <div class="absolute right-5 top-1/2 -translate-y-1/2">
-                                <svg class="animate-spin h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <div class="absolute -translate-y-1/2 right-5 top-1/2">
+                                <svg class="w-6 h-6 text-red-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
@@ -59,7 +59,7 @@
                     {{-- DBからの検索結果（既存製品） --}}
                     @if(count($dbProducts) > 0)
                         <div class="mt-6 space-y-3">
-                            <p class="text-sm text-gray-500 mb-2 flex items-center gap-2">
+                            <p class="flex items-center gap-2 mb-2 text-sm text-gray-500">
                                 <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
                                 </svg>
@@ -68,16 +68,16 @@
                             @foreach($dbProducts as $product)
                                 <div 
                                     wire:click="selectDbProduct({{ $product['id'] }})"
-                                    class="flex items-center gap-4 p-4 bg-white border-2 border-blue-100 rounded-xl cursor-pointer hover:border-blue-400 hover:shadow-lg transition-all duration-200 group"
+                                    class="flex items-center gap-4 p-4 transition-all duration-200 bg-white border-2 border-blue-100 cursor-pointer rounded-xl hover:border-blue-400 hover:shadow-lg group"
                                 >
-                                    <div class="w-14 h-14 flex items-center justify-center bg-blue-50 rounded-lg flex-shrink-0">
-                                        <svg class="w-7 h-7 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="flex items-center justify-center flex-shrink-0 rounded-lg w-14 h-14 bg-blue-50">
+                                        <svg class="text-blue-500 w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                         </svg>
                                     </div>
 
                                     <div class="flex-1 min-w-0">
-                                        <div class="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                                        <div class="font-bold text-gray-900 transition-colors group-hover:text-blue-600">
                                             {{ $product['name'] }}
                                         </div>
                                         <div class="flex flex-wrap items-center gap-2 mt-1">
@@ -104,7 +104,7 @@
                                         情報をコピー
                                     </span>
 
-                                    <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="flex-shrink-0 w-5 h-5 text-gray-400 transition-colors group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                     </svg>
                                 </div>
@@ -115,21 +115,21 @@
                     {{-- 検索結果（楽天API候補カード） --}}
                     @if(count($suggestions) > 0)
                         <div class="mt-6 space-y-3">
-                            <p class="text-sm text-gray-500 mb-2">楽天の候補から選択してください</p>
+                            <p class="mb-2 text-sm text-gray-500">楽天の候補から選択してください</p>
                             @foreach($suggestions as $index => $suggestion)
                                 <div 
                                     wire:click="selectSuggestion({{ $index }})"
-                                    class="flex items-center gap-4 p-4 bg-white border-2 border-gray-100 rounded-xl cursor-pointer hover:border-red-400 hover:shadow-lg transition-all duration-200 group"
+                                    class="flex items-center gap-4 p-4 transition-all duration-200 bg-white border-2 border-gray-100 cursor-pointer rounded-xl hover:border-red-400 hover:shadow-lg group"
                                 >
                                     {{-- サムネイル --}}
                                     @if(!empty($suggestion['_display_image']))
                                         <img 
                                             src="{{ $suggestion['_display_image'] }}" 
                                             alt="" 
-                                            class="w-20 h-20 object-contain rounded-lg bg-gray-50 flex-shrink-0"
+                                            class="flex-shrink-0 object-contain w-20 h-20 rounded-lg bg-gray-50"
                                         >
                                     @else
-                                        <div class="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-lg flex-shrink-0">
+                                        <div class="flex items-center justify-center flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg">
                                             <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                             </svg>
@@ -137,7 +137,7 @@
                                     @endif
 
                                     <div class="flex-1 min-w-0">
-                                        <div class="font-bold text-gray-900 text-lg group-hover:text-red-600 transition-colors">
+                                        <div class="text-lg font-bold text-gray-900 transition-colors group-hover:text-red-600">
                                             {{ $suggestion['product_name'] }}
                                         </div>
                                         <div class="flex flex-wrap items-center gap-2 mt-2">
@@ -162,14 +162,14 @@
 
                                     {{-- 参考価格 --}}
                                     @if(!empty($suggestion['_display_price']))
-                                        <div class="text-right flex-shrink-0">
+                                        <div class="flex-shrink-0 text-right">
                                             <div class="text-lg font-bold text-gray-800">¥{{ number_format($suggestion['_display_price']) }}</div>
                                             <div class="text-xs text-gray-400">参考価格</div>
                                         </div>
                                     @endif
 
                                     {{-- 矢印 --}}
-                                    <svg class="w-6 h-6 text-gray-400 group-hover:text-red-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="flex-shrink-0 w-6 h-6 text-gray-400 transition-colors group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                     </svg>
                                 </div>
@@ -179,14 +179,14 @@
 
                     {{-- 検索結果が0件の場合 --}}
                     @if($hasSearched && count($suggestions) === 0 && count($dbProducts) === 0 && mb_strlen($searchQuery) >= 2)
-                        <div class="mt-6 text-center p-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="p-8 mt-6 text-center border-2 border-gray-200 border-dashed bg-gray-50 rounded-xl">
+                            <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <p class="text-gray-600 mb-4">「{{ $searchQuery }}」に一致する製品が見つかりませんでした</p>
+                            <p class="mb-4 text-gray-600">「{{ $searchQuery }}」に一致する製品が見つかりませんでした</p>
                             <button 
                                 wire:click="skipToManualEntry"
-                                class="inline-flex items-center px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-700 transition-colors font-medium"
+                                class="inline-flex items-center px-6 py-3 font-medium text-white transition-colors bg-gray-800 rounded-xl hover:bg-gray-700"
                             >
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -199,9 +199,9 @@
 
                 {{-- 楽天クレジット --}}
                 @if($this->isRakutenConfigured())
-                    <div class="mt-12 flex items-center justify-center gap-2 text-xs text-gray-400">
+                    <div class="flex items-center justify-center gap-2 mt-12 text-xs text-gray-400">
                         <span>Supported by</span>
-                        <a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:underline font-medium">
+                        <a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener noreferrer" class="font-medium text-red-600 hover:underline">
                             Rakuten Web Service
                         </a>
                     </div>
@@ -211,7 +211,7 @@
                 <div class="mt-6">
                     <button 
                         wire:click="skipToManualEntry"
-                        class="text-gray-500 hover:text-gray-700 underline text-sm"
+                        class="text-sm text-gray-500 underline hover:text-gray-700"
                     >
                         検索せずに手動で登録する
                     </button>
@@ -223,12 +223,12 @@
         {{-- ステップ2: 詳細入力 --}}
         {{-- ======================================== --}}
         @if($step === 2)
-            <div class="bg-white shadow-xl rounded-2xl overflow-visible">
+            <div class="overflow-visible bg-white shadow-xl rounded-2xl">
                 {{-- 戻るボタン + ヘッダー --}}
-                <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b flex items-center gap-4">
+                <div class="flex items-center gap-4 px-6 py-4 border-b bg-gradient-to-r from-gray-50 to-gray-100">
                     <button 
                         wire:click="backToSearch"
-                        class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all"
+                        class="inline-flex items-center justify-center w-10 h-10 text-gray-600 transition-all bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -250,13 +250,13 @@
 
                 {{-- 選択された製品のプレビュー（楽天API） --}}
                 @if($selectedSuggestion)
-                    <div class="px-6 py-4 bg-green-50 border-b border-green-100">
+                    <div class="px-6 py-4 border-b border-green-100 bg-green-50">
                         <div class="flex items-center gap-4">
                             @if(!empty($selectedSuggestion['_display_image']))
                                 <img 
                                     src="{{ $selectedSuggestion['_display_image'] }}" 
                                     alt="" 
-                                    class="w-16 h-16 object-contain rounded-lg bg-white shadow-sm"
+                                    class="object-contain w-16 h-16 bg-white rounded-lg shadow-sm"
                                 >
                             @endif
                             <div class="flex-1">
@@ -266,15 +266,15 @@
                                     </svg>
                                     <span class="font-semibold text-green-800">{{ $selectedSuggestion['product_name'] }}</span>
                                 </div>
-                                <p class="text-sm text-green-600 mt-1">楽天APIからデータを取得しました</p>
+                                <p class="mt-1 text-sm text-green-600">楽天APIからデータを取得しました</p>
                             </div>
                         </div>
                     </div>
                 @elseif($selectedDbProduct)
                     {{-- 選択された製品のプレビュー（DB） --}}
-                    <div class="px-6 py-4 bg-blue-50 border-b border-blue-100">
+                    <div class="px-6 py-4 border-b border-blue-100 bg-blue-50">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 flex items-center justify-center bg-blue-100 rounded-lg">
+                            <div class="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
                                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                 </svg>
@@ -286,7 +286,7 @@
                                     </svg>
                                     <span class="font-semibold text-blue-800">{{ $selectedDbProduct->name }}</span>
                                 </div>
-                                <p class="text-sm text-blue-600 mt-1">既存製品の情報をコピーしました（新しい製品として登録されます）</p>
+                                <p class="mt-1 text-sm text-blue-600">既存製品の情報をコピーしました（新しい製品として登録されます）</p>
                             </div>
                         </div>
                     </div>
@@ -296,11 +296,11 @@
                 <form wire:submit="save" class="p-6 space-y-8">
                     {{-- 製品基本情報 --}}
                     <div>
-                        <h4 class="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
-                            <span class="inline-flex items-center justify-center w-7 h-7 bg-gray-800 text-white text-sm rounded-lg">1</span>
+                        <h4 class="flex items-center gap-2 mb-4 text-lg font-bold text-gray-800">
+                            <span class="inline-flex items-center justify-center text-sm text-white bg-gray-800 rounded-lg w-7 h-7">1</span>
                             製品基本情報
                         </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pl-9">
+                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 pl-9">
                             {{-- 製品名 --}}
                             <div class="md:col-span-2">
                                 <x-input-label for="name" :value="__('製品名')" class="font-medium" />
@@ -351,7 +351,7 @@
                                     aria-controls="genre-options"
                                 >
                                     <span class="text-left truncate" x-text="value || '選択してください'"></span>
-                                    <svg class="w-4 h-4 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="flex-shrink-0 w-4 h-4 ml-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
                                 </button>
@@ -361,18 +361,18 @@
                                     x-show="open"
                                     x-transition
                                     id="genre-options"
-                                    class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                    class="absolute z-50 w-full mt-1 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg max-h-60"
                                     role="listbox"
                                 >
                                     <div class="px-2 py-1 text-sm text-gray-500">選択してください</div>
                                     @foreach($genreCategories as $category => $subcategories)
-                                        <div class="px-3 py-1 text-xs font-semibold text-gray-500 bg-gray-50 sticky top-0">
+                                        <div class="sticky top-0 px-3 py-1 text-xs font-semibold text-gray-500 bg-gray-50">
                                             {{ $category }}
                                         </div>
                                         @foreach($subcategories as $subcategory)
                                             <button
                                                 type="button"
-                                                class="w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none"
+                                                class="w-full px-3 py-2 text-sm text-left hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none"
                                                 @click="value = '{{ $subcategory }}'; open = false"
                                                 role="option"
                                                 :aria-selected="value === '{{ $subcategory }}'"
@@ -383,7 +383,7 @@
                                     @endforeach
                                 </div>
 
-                                <p class="mt-1 text-xs text-gray-400 h-4">{{ $genre_id ? 'ジャンルID: ' . $genre_id : '' }}</p>
+                                <p class="h-4 mt-1 text-xs text-gray-400">{{ $genre_id ? 'ジャンルID: ' . $genre_id : '' }}</p>
                                 <x-input-error :messages="$errors->get('genre_name')" class="mt-2" />
                             </div>
 
@@ -409,11 +409,11 @@
 
                     {{-- 購入情報 --}}
                     <div>
-                        <h4 class="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
-                            <span class="inline-flex items-center justify-center w-7 h-7 bg-gray-800 text-white text-sm rounded-lg">2</span>
+                        <h4 class="flex items-center gap-2 mb-4 text-lg font-bold text-gray-800">
+                            <span class="inline-flex items-center justify-center text-sm text-white bg-gray-800 rounded-lg w-7 h-7">2</span>
                             購入情報
                         </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pl-9">
+                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 pl-9">
                             {{-- 購入日 --}}
                             <div>
                                 <x-input-label for="purchase_date" :value="__('購入日')" class="font-medium" />
@@ -432,7 +432,7 @@
                             <div>
                                 <x-input-label for="price" :value="__('購入金額')" class="font-medium" />
                                 <div class="relative mt-1.5">
-                                    <span class="absolute left-3 inset-y-0 flex items-center text-gray-500">¥</span>
+                                    <span class="absolute inset-y-0 flex items-center text-gray-500 left-3">¥</span>
                                     <x-text-input id="price" wire:model="price" class="block w-full pl-8" type="number" min="0" />
                                 </div>
                                 <x-input-error :messages="$errors->get('price')" class="mt-2" />
@@ -475,8 +475,8 @@
 
                     {{-- 備考 --}}
                     <div>
-                        <h4 class="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
-                            <span class="inline-flex items-center justify-center w-7 h-7 bg-gray-800 text-white text-sm rounded-lg">3</span>
+                        <h4 class="flex items-center gap-2 mb-4 text-lg font-bold text-gray-800">
+                            <span class="inline-flex items-center justify-center text-sm text-white bg-gray-800 rounded-lg w-7 h-7">3</span>
                             その他
                         </h4>
                         <div class="pl-9">
@@ -502,9 +502,9 @@
 
                 {{-- 楽天クレジット --}}
                 @if($rakuten_url)
-                    <div class="px-6 py-4 bg-gray-50 border-t flex items-center justify-center gap-2 text-xs text-gray-400">
+                    <div class="flex items-center justify-center gap-2 px-6 py-4 text-xs text-gray-400 border-t bg-gray-50">
                         <span>Supported by</span>
-                        <a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:underline font-medium">
+                        <a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener noreferrer" class="font-medium text-red-600 hover:underline">
                             Rakuten Web Service
                         </a>
                     </div>
