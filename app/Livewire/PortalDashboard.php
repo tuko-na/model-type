@@ -122,11 +122,15 @@ class PortalDashboard extends Component
         $totalCost = ($product->price ?? 0) + $product->incidents->sum('cost');
         $cpd = round($totalCost / $daysOwned, 1);
 
-        // Category Avg CPD
-        $catAvgLife = $this->categoryLifespans[$product->category] ?? 5;
+        // Genre/Category Avg CPD
+        $genreKey = $product->genre_name ?? $product->category ?? '';
+        $catAvgLife = $this->categoryLifespans[$genreKey] ?? 5;
         $catAvgDays = $catAvgLife * 365;
         
-        $catProducts = Product::where('category', $product->category)
+        $catProducts = Product::where(function($q) use ($genreKey) {
+                $q->where('genre_name', $genreKey)
+                  ->orWhere('category', $genreKey);
+            })
             ->where('group_id', $this->getGroupId())
             ->where('id', '!=', $product->id)
             ->get();

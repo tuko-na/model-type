@@ -44,12 +44,30 @@
                             <x-input-error :messages="$errors->get('manufacturer')" class="mt-2" />
                         </div>
 
-                        <!-- カテゴリ -->
+                        <!-- ジャンル -->
                         <div class="mt-4">
-                            <x-input-label for="category" :value="__('カテゴリ')" />
-                            <x-text-input id="category" class="block w-full mt-1" type="text" name="category" :value="old('category', $product->category)" required />
-                            <x-input-error :messages="$errors->get('category')" class="mt-2" />
+                            <x-input-label for="genre_name" :value="__('ジャンル')" />
+                            <x-text-input id="genre_name" class="block w-full mt-1" type="text" name="genre_name" :value="old('genre_name', $product->genre_name)" required placeholder="例: スマートフォン・タブレット" />
+                            <x-input-error :messages="$errors->get('genre_name')" class="mt-2" />
                         </div>
+
+                        <!-- 楽天リンク（表示のみ） -->
+                        @if($product->rakuten_url)
+                            <div class="mt-4">
+                                <x-input-label :value="__('楽天リンク')" />
+                                <a 
+                                    href="{{ $product->rakuten_url }}" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-2 mt-1 px-3 py-2 text-sm text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                    楽天で見る
+                                </a>
+                            </div>
+                        @endif
 
                         <!-- 購入日 -->
                         <div class="mt-4">

@@ -33,11 +33,29 @@
                             <p class="mt-1 text-sm text-gray-600">{{ $product->manufacturer }}</p>
                         </div>
 
-                        <!-- カテゴリ -->
+                        <!-- ジャンル -->
                         <div>
-                            <h3 class="text-lg font-medium text-gray-900">{{ __('カテゴリ') }}</h3>
-                            <p class="mt-1 text-sm text-gray-600">{{ $product->category }}</p>
+                            <h3 class="text-lg font-medium text-gray-900">{{ __('ジャンル') }}</h3>
+                            <p class="mt-1 text-sm text-gray-600">{{ $product->genre_name ?? '---' }}</p>
                         </div>
+
+                        <!-- 楽天リンク -->
+                        @if($product->rakuten_url)
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">{{ __('楽天リンク') }}</h3>
+                            <a 
+                                href="{{ $product->rakuten_url }}" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center gap-2 mt-1 px-3 py-2 text-sm text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                                楽天で見る
+                            </a>
+                        </div>
+                        @endif
 
                         <!-- 購入日 -->
                         <div>

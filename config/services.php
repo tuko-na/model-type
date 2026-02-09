@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'rakuten' => [
+        'app_id' => env('RAKUTEN_APP_ID'),
+        'demo_mode' => env('RAKUTEN_DEMO_MODE', false),
+        'product_search_url' => 'https://app.rakuten.co.jp/services/api/Product/Search/20170426',
+        'ichiba_search_url' => 'https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601',
+    ],
+
 ];

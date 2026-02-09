@@ -64,7 +64,7 @@ class EditIncident extends Component
         $this->severity_levels = Incident::SEVERITY_LEVELS;
 
         // フォームスキーマをロード
-        $this->productCategory = $this->selectedProduct->category ?? 'default';
+        $this->productCategory = $this->selectedProduct->genre_name ?? 'default';
         $this->loadFormSchema();
 
         // 既存のデータをフォームに設定

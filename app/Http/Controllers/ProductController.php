@@ -30,7 +30,7 @@ class ProductController extends Controller
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', $searchTerm)
                     ->orWhere('model_number', 'like', $searchTerm)
-                    ->orWhere('category', 'like', $searchTerm)
+                    ->orWhere('genre_name', 'like', $searchTerm)
                     ->orWhere('manufacturer', 'like', $searchTerm);
             });
         }
@@ -45,103 +45,14 @@ class ProductController extends Controller
             $query->whereIn('purchase_condition', $request->input('condition'));
         }
 
-        // カテゴリによる絞り込み
-        if ($request->filled('category')) {
-            $query->whereIn('category', $request->input('category'));
+        // ジャンルによる絞り込み
+        if ($request->filled('genre')) {
+            $query->whereIn('genre_name', $request->input('genre'));
         }
 
         $products = $query->latest('purchase_date')->get();
 
         return view('products.index', compact('products'));
-    }
-
-    /**
-     * Display the global catalog of products.
-     */
-    public function catalog(Request $request)
-    {
-        $query = ModelSuggestion::query();
-
-        if ($request->filled('search')) {
-            $searchTerm = '%' . $request->input('search') . '%';
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', $searchTerm)
-                    ->orWhere('model_number', 'like', $searchTerm)
-                    ->orWhere('category', 'like', $searchTerm)
-                    ->orWhere('manufacturer', 'like', $searchTerm);
-            });
-        }
-
-        // カテゴリによる絞り込み
-        if ($request->filled('category')) {
-            $query->whereIn('category', $request->input('category'));
-        }
-
-        $models = $query->orderBy('model_number')->paginate(20);
-
-        return view('products.catalog', compact('models'));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('products.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        Log::debug($request->all());
-        $validatedData = $request->validate([
-            'model_number' => 'required|string|max:255',
-            'name' => 'required|string|max:255',
-            'manufacturer' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'purchase_date' => 'required|date',
-            'status' => 'required|string|in:active,in_storage,in_repair,disposed',
-            'purchase_condition' => 'required|string|in:新品,中古,再生品,不明',           
-            'notes' => 'nullable|string',
-            'warranty_expires_on' => 'nullable|date',
-            'price' => 'nullable|integer|min:0',
-            'useful_life' => 'nullable|integer|min:0',
-        ]);
-
-        $group = $request->user()->groups()->first();
-
-        if (!$group) {
-            return back()->with('error', '所属するグループが見つかりません。');
-        }
-
-        try {
-            $product = new Product($validatedData);
-            $product->group_id = $group->id;
-            
-            if (!$product->save()) {
-                // save()がfalseを返した場合のログ
-                \Illuminate\Support\Facades\Log::error('Product save failed for an unknown reason.');
-                return back()->with('error', '製品の保存に失敗しました。管理者に連絡してください。')->withInput();
-            }
-
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Exception caught while saving product: ' . $e->getMessage());
-            return back()->with('error', '製品の保存中にエラーが発生しました。管理者に連絡してください。')->withInput();
-        }
-
-        // PM-03: 内部辞書の更新
-        ModelSuggestion::updateOrCreate(
-            ['model_number' => $product->model_number],
-            [
-                'name' => $product->name,
-                'manufacturer' => $product->manufacturer,
-                'category' => $product->category,
-            ]
-        );
-
-        return redirect()->route('products.index')->with('success', '製品を登録しました。');
     }
 
     /**
@@ -184,7 +95,7 @@ class ProductController extends Controller
             'model_number' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'manufacturer' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
+            'genre_name' => 'required|string|max:255',
             'purchase_date' => 'required|date',
             'status' => 'required|string|in:active,in_storage,in_repair,disposed',
             'purchase_condition' => 'required|string|in:新品,中古,再生品,不明',
@@ -202,7 +113,7 @@ class ProductController extends Controller
             [
                 'name' => $product->name,
                 'manufacturer' => $product->manufacturer,
-                'category' => $product->category,
+                'category' => $product->genre_name,
             ]
         );
 

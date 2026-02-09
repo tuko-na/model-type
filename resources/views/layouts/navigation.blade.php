@@ -18,9 +18,6 @@
                     <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">
                         {{ __('保有製品一覧') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('products.catalog')" :active="request()->routeIs('products.catalog')">
-                        {{ __('製品カタログ') }}
-                    </x-nav-link>
                     <x-nav-link :href="route('incidents.index')" :active="request()->routeIs('incidents.index')">
                         {{ __('インシデント一覧') }}
                     </x-nav-link>
@@ -81,9 +78,6 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.index')">
                 {{ __('保有製品一覧') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('products.catalog')" :active="request()->routeIs('products.catalog')">
-                {{ __('製品カタログ') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('incidents.index')" :active="request()->routeIs('incidents.index')">
                 {{ __('インシデント一覧') }}

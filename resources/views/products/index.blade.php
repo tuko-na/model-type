@@ -80,19 +80,18 @@
                                             </div>
                                         </div>
 
-                                        <!-- カテゴリ -->
+                                        <!-- ジャンル -->
                                         <div x-data="{ searchTerm: '' }">
-                                            <h5 class="mb-2 text-xs text-gray-500">カテゴリ</h5>
-                                            <x-text-input type="text" x-model="searchTerm" placeholder="カテゴリ検索..." class="w-full mb-2" />
+                                            <h5 class="mb-2 text-xs text-gray-500">ジャンル</h5>
+                                            <x-text-input type="text" x-model="searchTerm" placeholder="ジャンル検索..." class="w-full mb-2" />
                                             <div class="space-y-1 overflow-y-auto max-h-40">
                                                 @php
-                                                    // This should be passed from the controller to avoid re-querying
-                                                    $all_categories = app(App\Models\Product::class)->pluck('category')->unique()->sort();
+                                                    $all_genres = app(App\Models\Product::class)->pluck('genre_name')->filter()->unique()->sort();
                                                 @endphp
-                                                @foreach($all_categories as $category)
-                                                <label class="flex items-center" x-show="!searchTerm || '{{ $category }}'.toLowerCase().includes(searchTerm.toLowerCase())">
-                                                    <input type="checkbox" class="rounded form-checkbox" name="category[]" value="{{ $category }}" @if(in_array($category, request('category', []))) checked @endif>
-                                                    <span class="ml-2 text-sm">{{ $category }}</span>
+                                                @foreach($all_genres as $genre)
+                                                <label class="flex items-center" x-show="!searchTerm || '{{ $genre }}'.toLowerCase().includes(searchTerm.toLowerCase())">
+                                                    <input type="checkbox" class="rounded form-checkbox" name="genre[]" value="{{ $genre }}" @if(in_array($genre, request('genre', []))) checked @endif>
+                                                    <span class="ml-2 text-sm">{{ $genre }}</span>
                                                 </label>
                                                 @endforeach
                                             </div>
@@ -135,7 +134,7 @@
                                         型番
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                                        カテゴリ
+                                        ジャンル
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                                         メーカー
@@ -177,7 +176,7 @@
                                             {{ $product->model_number }}
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                            {{ $product->category }}
+                                            {{ $product->genre_name }}
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                                             {{ $product->manufacturer }}

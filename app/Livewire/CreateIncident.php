@@ -70,7 +70,7 @@ class CreateIncident extends Component
             if ($product) {
                 $this->selectedProduct = $product;
                 $this->search = $product->name;
-                $this->productCategory = $product->category ?? 'default';
+                $this->productCategory = $product->genre_name ?? 'default';
                 $this->loadFormSchema();
                 $this->currentStep = 1;
             }
@@ -104,8 +104,8 @@ class CreateIncident extends Component
         $this->search = $product->name;
         $this->products = [];
 
-        // Set category and load dynamic form schema
-        $this->productCategory = $product->category ?? 'default';
+        // Set genre and load dynamic form schema
+        $this->productCategory = $product->genre_name ?? 'default';
         $this->loadFormSchema();
 
         // Start wizard at step 1

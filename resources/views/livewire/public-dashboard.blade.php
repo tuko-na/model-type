@@ -209,7 +209,7 @@
                         <h3 class="mb-4 text-lg font-bold text-gray-900">基本情報</h3>
                         <div class="space-y-4">
                             <div class="flex items-center justify-between py-3 border-b border-gray-100">
-                                <span class="text-sm text-gray-500">カテゴリ</span>
+                                <span class="text-sm text-gray-500">ジャンル</span>
                                 <span class="text-sm font-medium text-gray-900">{{ $analytics['product']['category_label'] }}</span>
                             </div>
                             <div class="flex items-center justify-between py-3 border-b border-gray-100">
@@ -224,9 +224,34 @@
                                 <span class="text-sm text-gray-500">価格帯</span>
                                 <span class="text-sm font-medium text-gray-900">¥{{ number_format($analytics['price']['min']) }} 〜 ¥{{ number_format($analytics['price']['max']) }}</span>
                             </div>
-                            <div class="flex items-center justify-between py-3">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
                                 <span class="text-sm text-gray-500">サンプル数</span>
                                 <span class="text-sm font-medium text-gray-900">{{ $analytics['sample_count'] }}件</span>
+                            </div>
+                            
+                            {{-- 楽天リンク（常時表示 - カテゴリURLを代用） --}}
+                            <div class="pt-2">
+                                <a 
+                                    href="{{ !empty($analytics['product']['rakuten_url']) ? $analytics['product']['rakuten_url'] : 'https://www.rakuten.co.jp/category/?l-id=top_normal_gmenu_d_list' }}" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    class="flex items-center justify-center w-full gap-2 px-4 py-3 text-sm font-medium text-red-600 transition-colors bg-red-50 hover:bg-red-100 rounded-xl"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                    </svg>
+                                    楽天で詳細を見る
+                                </a>
+                            </div>
+                        </div>
+                        
+                        {{-- 楽天クレジット表示（規約遵守） --}}
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex items-center justify-center gap-2 text-xs text-gray-400">
+                                <span>Supported by</span>
+                                <a href="https://webservice.rakuten.co.jp/" target="_blank" rel="noopener noreferrer" class="text-red-600 hover:underline font-medium">
+                                    Rakuten Web Service
+                                </a>
                             </div>
                         </div>
                     </div>

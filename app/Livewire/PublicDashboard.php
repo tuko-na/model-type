@@ -308,8 +308,9 @@ class PublicDashboard extends Component
         $repairIncidents = $allIncidents->filter(fn($i) => $i->cost > 0);
         $avgRepairCost = $repairIncidents->count() > 0 ? round($repairIncidents->avg('cost')) : 0;
 
-        // カテゴリ平均寿命
-        $categoryLifeYears = $this->categoryLifespans[$product->category] ?? 5;
+        // カテゴリ平均寿命（genre_nameまたはcategoryで判定）
+        $categoryKey = $product->genre_name ?? $product->category ?? '';
+        $categoryLifeYears = $this->categoryLifespans[$categoryKey] ?? 5;
 
         // ライフサイクルコスト予測
         $expectedMaintenanceCost = $avgRepairCost * ($allIncidents->count() / max(1, $sampleCount));
@@ -335,8 +336,9 @@ class PublicDashboard extends Component
                 'name' => $product->name,
                 'model_number' => $product->model_number,
                 'manufacturer' => $product->manufacturer,
-                'category' => $product->category,
-                'category_label' => $this->categoryLabels[$product->category] ?? $product->category,
+                'category' => $product->genre_name ?? $product->category ?? '',
+                'category_label' => $product->genre_name ?? $this->categoryLabels[$product->category ?? ''] ?? $product->category ?? '',
+                'rakuten_url' => $product->rakuten_url ?? null,
             ],
             'sample_count' => $sampleCount,
             'reliability_score' => $reliabilityScore,
