@@ -90,15 +90,32 @@
                                 </div>
 
                                 {{-- Incident Type - Button Group --}}
-                                <div>
+                                <div x-data="{ selected: @entangle('incident_type') }">
                                     <x-input-label :value="__('インシデント種別')" class="mb-3" />
                                     <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                                         @foreach($incident_types as $key => $label)
-                                            @php $isSelected = $incident_type === $key; @endphp
-                                            <label class="relative cursor-pointer group">
-                                                <input type="radio" wire:model.live="incident_type" value="{{ $key }}" class="sr-only">
-                                                <div class="p-4 text-center border-2 rounded-lg transition-all duration-200 active:scale-95
-                                                    {{ $isSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-lg ring-2 ring-indigo-600 ring-offset-2' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 hover:shadow-md' }}">
+                                            <label
+                                                class="relative cursor-pointer group"
+                                                @click="selected = '{{ $key }}'"
+                                            >
+                                                <input type="radio" wire:model="incident_type" value="{{ $key }}" class="sr-only">
+                                                {{-- 選択時のチェックマーク --}}
+                                                <div
+                                                    class="absolute z-10 items-center justify-center w-6 h-6 text-white transition-all duration-200 bg-indigo-600 rounded-full shadow-lg -top-2 -right-2"
+                                                    :class="selected === '{{ $key }}' ? 'flex scale-100 opacity-100' : 'hidden scale-0 opacity-0'"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                </div>
+                                                <div
+                                                    class="p-4 text-center border-2 rounded-lg transition-all duration-200
+                                                        hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm hover:scale-[1.02]
+                                                        active:scale-[0.98]"
+                                                    :class="selected === '{{ $key }}'
+                                                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-md scale-[1.02]'
+                                                        : 'border-gray-200 bg-white'"
+                                                >
                                                     <div class="flex flex-col items-center">
                                                         @if($key === 'failure')
                                                             <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,46 +145,40 @@
                                 </div>
 
                                 {{-- Severity - Visual Selector --}}
-                                <div>
+                                <div x-data="{ selected: @entangle('severity') }">
                                     <x-input-label :value="__('重大度')" class="mb-3" />
                                     <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                                         @foreach($severity_levels as $key => $data)
                                             @php
-                                                $isSelected = $severity === $key;
                                                 $colorClasses = match($key) {
-                                                    'low' => [
-                                                        'selected' => 'border-green-500 bg-green-50 shadow-lg ring-2 ring-green-500 ring-offset-2',
-                                                        'hover' => 'hover:border-green-300 hover:shadow-md',
-                                                        'icon' => 'text-green-600 bg-green-100',
-                                                    ],
-                                                    'medium' => [
-                                                        'selected' => 'border-yellow-500 bg-yellow-50 shadow-lg ring-2 ring-yellow-500 ring-offset-2',
-                                                        'hover' => 'hover:border-yellow-300 hover:shadow-md',
-                                                        'icon' => 'text-yellow-600 bg-yellow-100',
-                                                    ],
-                                                    'high' => [
-                                                        'selected' => 'border-orange-500 bg-orange-50 shadow-lg ring-2 ring-orange-500 ring-offset-2',
-                                                        'hover' => 'hover:border-orange-300 hover:shadow-md',
-                                                        'icon' => 'text-orange-600 bg-orange-100',
-                                                    ],
-                                                    'critical' => [
-                                                        'selected' => 'border-red-500 bg-red-50 shadow-lg ring-2 ring-red-500 ring-offset-2',
-                                                        'hover' => 'hover:border-red-300 hover:shadow-md',
-                                                        'icon' => 'text-red-600 bg-red-100',
-                                                    ],
-                                                    default => [
-                                                        'selected' => 'border-gray-500 bg-gray-50 shadow-lg ring-2 ring-gray-500 ring-offset-2',
-                                                        'hover' => 'hover:border-gray-300 hover:shadow-md',
-                                                        'icon' => 'text-gray-600 bg-gray-100',
-                                                    ],
+                                                    'low' => ['bg' => 'bg-green-500', 'border' => 'border-green-500', 'bgLight' => 'bg-green-50', 'ring' => 'ring-green-500', 'hover' => 'hover:border-green-300', 'icon' => 'bg-green-100 text-green-600'],
+                                                    'medium' => ['bg' => 'bg-yellow-500', 'border' => 'border-yellow-500', 'bgLight' => 'bg-yellow-50', 'ring' => 'ring-yellow-500', 'hover' => 'hover:border-yellow-300', 'icon' => 'bg-yellow-100 text-yellow-600'],
+                                                    'high' => ['bg' => 'bg-orange-500', 'border' => 'border-orange-500', 'bgLight' => 'bg-orange-50', 'ring' => 'ring-orange-500', 'hover' => 'hover:border-orange-300', 'icon' => 'bg-orange-100 text-orange-600'],
+                                                    default => ['bg' => 'bg-red-500', 'border' => 'border-red-500', 'bgLight' => 'bg-red-50', 'ring' => 'ring-red-500', 'hover' => 'hover:border-red-300', 'icon' => 'bg-red-100 text-red-600'],
                                                 };
                                             @endphp
-                                            <label class="relative cursor-pointer group">
-                                                <input type="radio" wire:model.live="severity" value="{{ $key }}" class="sr-only">
-                                                <div class="p-4 text-center border-2 rounded-lg transition-all duration-200 active:scale-95
-                                                    {{ $isSelected ? $colorClasses['selected'] : 'border-gray-200 bg-white ' . $colorClasses['hover'] }}">
+                                            <label
+                                                class="relative cursor-pointer group"
+                                                @click="selected = '{{ $key }}'"
+                                            >
+                                                <input type="radio" wire:model="severity" value="{{ $key }}" class="sr-only">
+                                                {{-- 選択時のチェックマーク --}}
+                                                <div
+                                                    class="absolute -top-2 -right-2 w-6 h-6 {{ $colorClasses['bg'] }} rounded-full items-center justify-center text-white z-10 shadow-lg transition-all duration-200"
+                                                    :class="selected === '{{ $key }}' ? 'flex scale-100 opacity-100' : 'hidden scale-0 opacity-0'"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                </div>
+                                                <div
+                                                    class="p-4 text-center border-2 rounded-lg transition-all duration-200 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] {{ $colorClasses['hover'] }}"
+                                                    :class="selected === '{{ $key }}'
+                                                        ? '{{ $colorClasses['border'] }} {{ $colorClasses['bgLight'] }} ring-2 ring-offset-2 {{ $colorClasses['ring'] }} scale-[1.02]'
+                                                        : 'border-gray-200 bg-white'"
+                                                >
                                                     <div class="flex flex-col items-center">
-                                                        <div class="flex items-center justify-center w-8 h-8 mb-2 rounded-full {{ $colorClasses['icon'] }}">
+                                                        <div class="w-8 h-8 rounded-full mb-2 flex items-center justify-center {{ $colorClasses['icon'] }}">
                                                             @if($key === 'low')
                                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -391,21 +402,27 @@
                                 </div>
 
                                 {{-- Symptom Tags --}}
-                                <div>
+                                <div x-data="{ selectedTags: @entangle('symptom_tags') }">
                                     <x-input-label :value="__('症状タグ（複数選択可）')" class="mb-3" />
                                     <div class="flex flex-wrap gap-2">
                                         @foreach($symptom_tags_master as $key => $label)
                                             <button
                                                 type="button"
-                                                wire:click="toggleSymptomTag('{{ $key }}')"
                                                 class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer
-                                                    {{ in_array($key, $symptom_tags) ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}"
+                                                    hover:scale-105 active:scale-95"
+                                                :class="selectedTags.includes('{{ $key }}')
+                                                    ? 'bg-indigo-600 text-white shadow-md scale-105'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                                @click="selectedTags.includes('{{ $key }}') ? selectedTags = selectedTags.filter(t => t !== '{{ $key }}') : selectedTags.push('{{ $key }}')"
                                             >
-                                                @if(in_array($key, $symptom_tags))
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                                    </svg>
-                                                @endif
+                                                {{-- 選択時のチェックマーク --}}
+                                                <svg
+                                                    class="w-4 h-4 transition-all duration-200"
+                                                    :class="selectedTags.includes('{{ $key }}') ? 'block' : 'hidden'"
+                                                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                >
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
                                                 {{ $label }}
                                             </button>
                                         @endforeach
