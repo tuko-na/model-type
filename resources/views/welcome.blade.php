@@ -31,6 +31,7 @@
                         <a
                             href="{{ route('login') }}"
                             class="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+                            style="display:inline-flex;align-items:center;border-radius:0.375rem;background:#111827;padding:0.5rem 1rem;font-size:0.875rem;font-weight:500;color:#fff;text-decoration:none;"
                         >
                             ログイン
                         </a>
