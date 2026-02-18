@@ -39,14 +39,20 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="text-sm text-gray-600 underline rounded-md hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('すでに登録済みですか？') }}
+        <div class="flex items-center justify-between mt-4">
+            <a class="text-sm text-gray-600 underline rounded-md hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ url('/') }}">
+                {{ __('戻る') }}
             </a>
 
-            <x-primary-button class="ms-4">
-                {{ __('登録する') }}
-            </x-primary-button>
+            <div class="flex items-center">
+                <a class="text-sm text-gray-600 underline rounded-md hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
+                    {{ __('すでに登録済みですか？') }}
+                </a>
+
+                <x-primary-button class="ms-4">
+                    {{ __('登録する') }}
+                </x-primary-button>
+            </div>
         </div>
     </form>
 </x-guest-layout>
