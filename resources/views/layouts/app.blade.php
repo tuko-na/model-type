@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>型log</title>
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="manifest" href="/site.webmanifest">
@@ -18,14 +18,14 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
     </head>
-    <body class="font-sans antialiased h-screen overflow-hidden bg-gray-100">
+    <body class="h-screen overflow-hidden font-sans antialiased bg-gray-100">
         <div class="flex flex-col h-full">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
             @isset($header)
                 <header class="{{ $headerColor ?? 'bg-white' }} shadow flex-shrink-0 z-10">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <div class="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>
